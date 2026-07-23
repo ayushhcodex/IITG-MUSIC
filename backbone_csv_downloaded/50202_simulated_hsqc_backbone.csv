@@ -1,0 +1,7 @@
+sequence,chem_comp_ID,X_shift,Y_shift,X_atom_name,Y_atom_name
+2,ILE,8.39,129.52,H,N
+3,SER,9.35,119.74,H,N
+6,ILE,8.45,121.26,H,N
+7,SER,11.57,127.09,H,N
+9,ALA,8.6,126.81,H,N
+10,LEU,9.25,114.76,H,N

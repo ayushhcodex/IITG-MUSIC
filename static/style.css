@@ -1,0 +1,902 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500;600&display=swap');
+
+:root {
+  --bg-dark: #07080d;
+  --bg-panel: rgba(16, 19, 33, 0.82);
+  --bg-card: rgba(26, 31, 53, 0.65);
+  --border-glass: rgba(255, 255, 255, 0.12);
+  --text-main: #f0f4f8;
+  --text-dim: #94a1b2;
+  
+  --accent-cyan: #00f2fe;
+  --accent-blue: #4facfe;
+  --accent-magenta: #f857a6;
+  --accent-amber: #f9d423;
+  --accent-green: #00e676;
+
+  --helix-color: #00f2fe;
+  --sheet-color: #f857a6;
+  --coil-color: #f9d423;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  background: radial-gradient(circle at 15% 15%, #14172a 0%, var(--bg-dark) 60%),
+              radial-gradient(circle at 85% 85%, #181329 0%, var(--bg-dark) 60%);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.app-header {
+  height: 64px;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-glass);
+  background: rgba(7, 8, 13, 0.92);
+  backdrop-filter: blur(16px);
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.logo-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  box-shadow: 0 0 18px rgba(0, 242, 254, 0.4);
+}
+
+.logo-text h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  background: linear-gradient(to right, #ffffff, #a8c0ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.logo-text span {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.badge-scientific {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(0, 242, 254, 0.1);
+  border: 1px solid rgba(0, 242, 254, 0.28);
+  color: var(--accent-cyan);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+/* Screen Recording Button */
+.btn-record-mode {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(248, 87, 166, 0.18), rgba(0, 242, 254, 0.18));
+  border: 1px solid var(--accent-magenta);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 16px rgba(248, 87, 166, 0.3);
+}
+
+.btn-record-mode:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(248, 87, 166, 0.55);
+  background: linear-gradient(135deg, rgba(248, 87, 166, 0.35), rgba(0, 242, 254, 0.35));
+}
+
+.record-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff3b3b;
+  box-shadow: 0 0 8px #ff3b3b;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.3); }
+}
+
+/* Main Layout Grid (Fits 100% in viewport) */
+.main-container {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 1.2rem;
+  padding: 1rem 1.8rem;
+  overflow: hidden;
+}
+
+/* Left Studio Column */
+.left-studio {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.glass-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  padding: 1.15rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.panel-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ffffff;
+}
+
+/* Tabs */
+.tabs-header {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  background: rgba(10, 12, 20, 0.65);
+  padding: 0.3rem;
+  border-radius: 10px;
+  margin-bottom: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 0.5rem 0.3rem;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Form inputs */
+.form-group {
+  margin-bottom: 0.85rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.input-text, .select-input {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 9px;
+  background: rgba(10, 12, 20, 0.75);
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.88rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-text:focus, .select-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.22);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  color: #07080d;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 18px rgba(0, 242, 254, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 242, 254, 0.42);
+}
+
+.btn-compact {
+  width: auto;
+  padding: 0.6rem 1.1rem;
+  flex-shrink: 0;
+}
+
+.btn-generate {
+  background: linear-gradient(135deg, var(--accent-magenta), #ff6a88);
+  color: #fff;
+  margin-top: 0.35rem;
+  box-shadow: 0 6px 20px rgba(248, 87, 166, 0.35);
+}
+
+/* "New Music – Same Protein" button: teal/cyan so it's visually distinct.
+   Hidden by default; shown by JS after the first successful generation. */
+.btn-regen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.1rem;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  background: linear-gradient(135deg, #00c9a7, #00f2fe);
+  color: #090a12;
+  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.35);
+}
+.btn-regen:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 242, 254, 0.5);
+}
+.btn-regen:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  max-height: 140px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.preset-card {
+  background: rgba(14, 17, 28, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  padding: 0.65rem 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-card:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(22, 28, 48, 0.85);
+  transform: translateX(3px);
+}
+
+.preset-card h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.15rem;
+}
+
+.preset-card p {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+
+.loaded-status-box {
+  margin-top: 0.8rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 9px;
+  background: rgba(0, 242, 254, 0.08);
+  border: 1px solid rgba(0, 242, 254, 0.25);
+}
+
+.loaded-title {
+  color: var(--accent-cyan);
+  font-size: 0.82rem;
+}
+
+.loaded-sub {
+  font-size: 0.73rem;
+  color: var(--text-dim);
+  margin-top: 0.15rem;
+}
+
+.tips-panel {
+  padding: 0.85rem 1.1rem;
+  border-color: rgba(248, 87, 166, 0.25);
+  background: rgba(24, 15, 33, 0.65);
+}
+
+.tips-header {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent-magenta);
+  margin-bottom: 0.3rem;
+}
+
+.tips-panel p {
+  font-size: 0.76rem;
+  color: #d1d8e6;
+  line-height: 1.4;
+}
+
+/* Right Stage Container (Unified single card fitting 100% height) */
+.right-stage {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage-card {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+/* Stage Top Header Bar */
+.stage-header {
+  height: 54px;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 13, 23, 0.9);
+  flex-shrink: 0;
+}
+
+.stage-title-group h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  display: inline-block;
+  margin-right: 0.75rem;
+}
+
+.stage-subtitle {
+  font-size: 0.78rem;
+  color: var(--accent-cyan);
+  font-weight: 500;
+}
+
+.stage-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.btn-spin-toggle {
+  padding: 0.38rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(20, 25, 42, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  color: var(--accent-cyan);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-spin-toggle:hover {
+  transform: translateY(-1px);
+  background: rgba(0, 242, 254, 0.15);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.45);
+}
+
+.btn-spin-toggle.spinning-active {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(0, 230, 118, 0.25));
+  border-color: #00e676;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+}
+
+.mol-legend {
+  display: flex;
+  gap: 0.9rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.dot-helix { background: var(--helix-color); }
+.dot-sheet { background: var(--sheet-color); }
+.dot-coil { background: var(--coil-color); }
+
+.btn-exit-record {
+  display: none;
+  padding: 0.38rem 0.85rem;
+  border-radius: 7px;
+  background: rgba(255, 88, 88, 0.2);
+  border: 1px solid rgba(255, 88, 88, 0.5);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-exit-record:hover {
+  background: rgba(255, 88, 88, 0.35);
+}
+
+/* Center WebGL 3D Molecular Canvas */
+.mol-canvas-wrapper {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+  background: #090a12;
+}
+
+#mol3d {
+  width: 100%;
+  height: 100%;
+}
+
+/* Floating Live HUD Overlay */
+.live-hud-overlay {
+  position: absolute;
+  top: 1rem;
+  left: 1.25rem;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.current-sounding-badge {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  background: rgba(7, 8, 13, 0.82);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  padding: 0.45rem 0.9rem;
+  border-radius: 9px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================
+   🎵 FLOATING MUSIC NOTE — overlaid on the 3D canvas,
+   bounces and pulses in the amino acid's unique color
+   ============================================================ */
+
+.floating-note-wrapper {
+  position: absolute;
+  bottom: 18%;
+  right: 5%;
+  pointer-events: none;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.floating-note-wrapper.note-active {
+  opacity: 1;
+}
+
+.floating-note {
+  font-size: 2.8rem;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 18px var(--accent-cyan), 0 0 36px var(--accent-cyan);
+  position: absolute;
+  animation: noteFloat 1.8s ease-in-out infinite;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.floating-note.note-burst {
+  animation: noteFloat 1.8s ease-in-out infinite, noteBurst 0.35s cubic-bezier(0.36,0.07,0.19,0.97) forwards;
+}
+
+.floating-note-ripple {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2.5px solid var(--accent-cyan);
+  opacity: 0;
+  transition: border-color 0.2s ease;
+  pointer-events: none;
+}
+
+.floating-note-ripple.ripple-fire {
+  animation: noteRipple 0.6s ease-out forwards;
+}
+
+@keyframes noteFloat {
+  0%   { transform: translateY(0px) rotate(-8deg); }
+  25%  { transform: translateY(-10px) rotate(-4deg); }
+  50%  { transform: translateY(-16px) rotate(0deg); }
+  75%  { transform: translateY(-10px) rotate(4deg); }
+  100% { transform: translateY(0px) rotate(-8deg); }
+}
+
+@keyframes noteBurst {
+  0%   { transform: scale(1) translateY(0px) rotate(-8deg); }
+  30%  { transform: scale(1.55) translateY(-22px) rotate(6deg); }
+  60%  { transform: scale(1.2) translateY(-12px) rotate(-4deg); }
+  100% { transform: scale(1) translateY(0px) rotate(-8deg); }
+}
+
+@keyframes noteRipple {
+  0%   { transform: scale(0.6); opacity: 0.9; }
+  70%  { transform: scale(2.2); opacity: 0.35; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+/* ============================================================
+   🎵 RIBBON NOTE POINTER — floats above the active res-card
+   on the bottom amino acid strip
+   ============================================================ */
+
+.ribbon-note-pointer {
+  font-size: 1.15rem;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 10px var(--accent-cyan);
+  position: absolute;
+  top: -1.4rem;
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: left 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              color 0.2s ease,
+              text-shadow 0.2s ease,
+              opacity 0.25s ease;
+  animation: ribbonNoteFloat 1.2s ease-in-out infinite;
+  z-index: 15;
+  will-change: left, color;
+}
+
+.ribbon-note-pointer.note-visible {
+  opacity: 1;
+}
+
+@keyframes ribbonNoteFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
+}
+
+/* Bottom Integrated Dock (Audio Bar + Amino Acid Sequence Strip) */
+.stage-bottom-dock {
+  background: rgba(10, 13, 24, 0.95);
+  border-top: 1px solid var(--border-glass);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.7rem 1.25rem 0.8rem 1.25rem;
+  overflow-x: hidden;
+}
+
+.dock-player-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 0.65rem;
+}
+
+.btn-play {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--accent-magenta), #ff5858);
+  color: #fff;
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px rgba(248, 87, 166, 0.45);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-play:hover {
+  transform: scale(1.08);
+}
+
+.player-progress-area {
+  flex: 1;
+}
+
+.player-time-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.player-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+}
+
+.player-timer {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.78rem;
+  color: #fff;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, var(--accent-cyan), var(--accent-magenta));
+  transition: width 0.1s linear;
+}
+
+.dock-exports {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-export-mini {
+  padding: 0.38rem 0.7rem;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(20, 25, 45, 0.8);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-export-mini:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(35, 45, 78, 0.9);
+}
+
+/* Bottom Amino Acid Sequence Strip */
+.strip-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.strip-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 0.6px;
+}
+
+.strip-hint {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.sequence-ribbon {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  padding-top: 1.6rem;   /* space for ribbon note pointer above cards */
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.res-card {
+  min-width: 66px;
+  padding: 0.45rem 0.35rem;
+  border-radius: 9px;
+  background: rgba(20, 25, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.res-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.res-card.active-res {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 0 18px rgba(0, 242, 254, 0.75);
+  border-color: #fff;
+  background: rgba(28, 42, 74, 0.95);
+}
+
+.res-num {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  font-family: 'Fira Code', monospace;
+}
+
+.res-aa {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0.15rem 0;
+  color: #fff;
+}
+
+.res-svara {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #a8c0ff;
+}
+
+/* Secondary Structure Colored Borders */
+.res-card.ss-helix { border-top: 3px solid var(--helix-color); }
+.res-card.ss-sheet { border-top: 3px solid var(--sheet-color); }
+.res-card.ss-coil { border-top: 3px solid var(--coil-color); }
+
+/* =========================================================
+   🎬 FULLSCREEN SCREEN RECORDING MODE (Theater / Focus View)
+   ========================================================= */
+body.recording-mode .app-header {
+  display: none !important;
+}
+
+body.recording-mode .left-studio {
+  display: none !important;
+}
+
+body.recording-mode .main-container {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  grid-template-columns: 1fr !important;
+  gap: 0 !important;
+}
+
+body.recording-mode .right-stage {
+  width: 100vw;
+  height: 100vh;
+}
+
+body.recording-mode .stage-card {
+  border-radius: 0 !important;
+  border: none !important;
+  width: 100vw;
+  height: 100vh;
+}
+
+body.recording-mode .btn-exit-record {
+  display: inline-block !important;
+}
+
+body.recording-mode .res-card {
+  min-width: 76px;
+  padding: 0.6rem 0.5rem;
+}
+
+body.recording-mode .res-aa {
+  font-size: 1.05rem;
+}
