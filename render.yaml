@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: cosmic-raga
+    env: python
+    buildCommand: "apt-get update && apt-get install -y fluidsynth && pip install -r requirements.txt"
+    startCommand: "uvicorn backend_app:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10
