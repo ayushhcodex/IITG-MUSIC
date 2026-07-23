@@ -1,9 +1,8 @@
-pandas
-numpy
-MIDIUtil
-pretty_midi
-soundfile
-fastapi
-uvicorn
-requests
-python-multipart
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+python-multipart==0.0.32
+pandas==2.3.3
+numpy==2.4.4
+MIDIUtil==1.2.1
+requests==2.33.1
+pydantic==2.13.3
