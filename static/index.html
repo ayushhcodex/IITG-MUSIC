@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cosmic Raga — Molecular Sonification Studio</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- 3Dmol.js WebGL Library -->
+  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo-container">
+      <div class="logo-icon">🎵</div>
+      <div class="logo-text">
+        <h1>Cosmic Raga</h1>
+        <span>Molecular Sonification & 3D Audio-Visual Studio</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-scientific">
+        ⚛️ BMRB & PDB NMR Chemical Shift Sonification
+      </div>
+      <button class="btn-record-mode" onclick="toggleRecordingMode()" title="Expand Stage to 100% Fullscreen for Screen Recording (Press ESC to exit)">
+        <span class="record-dot"></span>
+        <span>🎬 Screen Record Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container (Fixed 100vh Layout, No Page Scrolling) -->
+  <main class="main-container">
+
+    <!-- Left Column: Compact Studio Controls -->
+    <section class="left-studio">
+      
+      <!-- Input Mode Panel -->
+      <div class="glass-panel">
+        <h2 class="panel-title">1. Protein Data Source</h2>
+        
+        <div class="tabs-header">
+          <button class="tab-btn active" onclick="switchTab('tab-fetch')">🌐 Online BMRB/PDB</button>
+          <button class="tab-btn" onclick="switchTab('tab-preset')">✨ Presets</button>
+          <button class="tab-btn" onclick="switchTab('tab-upload')">📁 Upload</button>
+        </div>
+
+        <!-- Tab 1: Online Fetcher -->
+        <div id="tab-fetch" class="tab-content active">
+          <div class="form-group">
+            <label class="form-label">Enter BMRB ID or PDB ID</label>
+            <div class="input-row">
+              <input type="text" id="fetchInput" class="input-text" placeholder="e.g. 25237 or 1DMB" value="1DMB" />
+              <button class="btn-primary btn-compact" onclick="fetchOnlineData()">
+                <span>⚡ Load</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Presets -->
+        <div id="tab-preset" class="tab-content">
+          <div class="preset-grid" id="presetContainer">
+            <!-- Populated by app.js -->
+          </div>
+        </div>
+
+        <!-- Tab 3: Upload CSV -->
+        <div id="tab-upload" class="tab-content">
+          <div class="form-group">
+            <label class="form-label">Select CSV / NMR Dataset</label>
+            <input type="file" id="csvFileInput" accept=".csv,.str" class="input-text" style="padding: 0.4rem;" />
+          <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+            <input type="checkbox" id="isRawPpmCheck" style="width: 16px; height: 16px;" />
+            <label for="isRawPpmCheck" class="form-label" style="margin-bottom: 0;">This is a RAW file (compute frequencies from X_shift & Y_shift)</label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Structure PDB ID (Optional for 3D View)</label>
+            <input type="text" id="uploadPdbInput" placeholder="e.g. 1DMB or 1ST7" class="input-text" maxlength="4" style="text-transform: uppercase;" />
+          </div>
+          <button class="btn-primary" onclick="uploadCsvFile()">
+            <span>📤 Upload File</span>
+          </button>
+        </div>
+
+        <!-- Loaded Dataset Status -->
+        <div id="loadedStatus" class="loaded-status-box" style="display: none;">
+          <strong class="loaded-title" id="loadedTitle">No dataset loaded</strong>
+          <p class="loaded-sub" id="loadedSub">0 residues loaded</p>
+          <div class="pdb-switcher-box" style="margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span style="font-size: 0.82rem; color: #a5b4fc;">⚛️ 3D Structure: <strong id="currentPdbLabel" style="color: #fff; background: rgba(255,255,255,0.1); padding: 0.1rem 0.4rem; border-radius: 4px;">None</strong></span>
+            <div style="display: flex; gap: 0.3rem; margin-left: auto;">
+              <input type="text" id="switchPdbInput" placeholder="PDB ID" class="input-text" maxlength="4" style="width: 75px; padding: 0.2rem 0.4rem; font-size: 0.8rem; text-transform: uppercase;" />
+              <button class="btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="switch3DStructure()">Load 3D</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customization Studio Panel -->
+      <div class="glass-panel">
+        <h2 class="panel-title">2. Raga Customization Studio</h2>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Raag Mood</label>
+            <select id="raagSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <option value="Yaman">Yaman (Serene Evening)</option>
+              <option value="Bhairav">Bhairav (Majestic Morning)</option>
+              <option value="Bhupali">Bhupali (Joyful Pentatonic)</option>
+              <option value="Kafi">Kafi (Expressive Dynamic)</option>
+              <option value="Malkauns">Malkauns (Deep Meditative)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Base Root Note</label>
+            <select id="rootSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <option value="60">Sa = C4 (Standard)</option>
+              <option value="62">Sa = D4 (Bright)</option>
+              <option value="57">Sa = A3 (Deep Warm)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Lead Instrument</label>
+            <select id="leadSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <option value="107">Santoor (Dulcimer)</option>
+              <option value="104">Sitar (Plucked String)</option>
+              <option value="74">Bansuri (Flute)</option>
+              <option value="0">Acoustic Piano</option>
+              <option value="40">Classical Violin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tempo Speed</label>
+            <select id="tempoSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <option value="1.0">1.0x (Scientific Default)</option>
+              <option value="0.75">0.75x (Contemplative)</option>
+              <option value="1.25">1.25x (Lively & Flowing)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Spectrometer (MHz)</label>
+            <input type="number" id="spectroInput" class="input-text" value="750" step="1" min="100" max="1500" onchange="autoRegenerateIfReady()" style="padding: 0.4rem; height: 38px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; width: 100%;" />
+          </div>
+          <!-- Hidden echoSelect to preserve backend/app.js compatibility -->
+          <select id="echoSelect" style="display: none;"><option value="74" selected></option></select>
+        </div>
+
+        <button class="btn-primary btn-generate" onclick="generateMusic()" id="btnGenerate">
+          <span>🎼 Generate Music & Update CSV</span>
+        </button>
+      </div>
+
+      <!-- Quick Tips Card -->
+      <div class="glass-panel tips-panel">
+        <div class="tips-header">💡 Screen Recording Tip</div>
+        <p>Click <strong>🎬 Screen Record Mode</strong> at top right to expand the 3D structure and amino acid strip to fullscreen theater view.</p>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Unified Audio-Visual Recording Stage Card -->
+    <section class="right-stage" id="stageContainer">
+      
+      <div class="stage-card">
+        
+        <!-- Stage Top Bar -->
+        <div class="stage-header">
+          <div class="stage-title-group">
+            <h3 id="molTitle">Maltose Binding Protein (PDB: 1DMB)</h3>
+            <span class="stage-subtitle" id="molSubtitle">BioNMR IITG</span>
+          </div>
+          <div class="stage-header-actions">
+            <button class="btn-spin-toggle" id="btnToggleSpin" onclick="toggleStructureRotation()" title="Toggle Continuous Clockwise 3D Molecular Rotation">
+              <span>🔄 3D Motion: OFF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Center 3D Molecular Canvas (Flexible height so it fits 100% in viewport) -->
+        <div class="mol-canvas-wrapper">
+          <div id="mol3d"></div>
+
+          <!-- Floating Live Sounding HUD inside 3D Canvas -->
+          <div class="live-hud-overlay">
+            <div class="current-sounding-badge" id="currentSoundingBadge">
+              Ready — Click Play or select an amino acid residue below
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Integrated Audio Controls & Bottom Amino Acid Sequence Strip -->
+        <div class="stage-bottom-dock" id="playerContainer">
+          
+          <!-- Audio Controls Row -->
+          <div class="dock-player-bar">
+            <button class="btn-play" id="btnPlayPause" onclick="togglePlayPause()" title="Play / Pause Audio">▶</button>
+            
+            <div class="player-progress-area">
+              <div class="player-time-row">
+                <span class="player-label">SYNCHRONIZED MOLECULAR TIMELINE</span>
+                <span class="player-timer"><span id="currentTimeDisplay">0:00</span> / <span id="totalTimeDisplay">0:00</span></span>
+              </div>
+              <div class="progress-bar-container" onclick="seekAudio(event)">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+              </div>
+            </div>
+
+            <!-- Export Actions -->
+            <div class="dock-exports">
+              <a class="btn-export-mini" id="linkDownloadWav" download="protein_sonification.wav" title="Download WAV Audio">🎵 WAV</a>
+              <a class="btn-export-mini" id="linkDownloadMid" download="protein_sonification.mid" title="Download MIDI File">🎹 MIDI</a>
+              <a class="btn-export-mini" id="linkDownloadCsv" download="protein_dataset.csv" title="Download CSV Dataset">📊 CSV</a>
+            </div>
+          </div>
+
+          <!-- Hidden Audio Element -->
+          <audio id="audioPlayer"></audio>
+
+          <!-- Bottom Strip of Amino Acids (Always visible & synced) -->
+          <div class="strip-header-row">
+            <span class="strip-title">BOTTOM STRIP OF AMINO ACIDS — RESIDUE-BY-RESIDUE MELODIC RIBBON (CLICK TO SOUND)</span>
+            <span class="strip-hint">Active residue highlights structure &amp; glows</span>
+          </div>
+          <!-- Ribbon note pointer — floats above the active residue card -->
+          <div class="ribbon-note-pointer" id="ribbonNotePointer">♪</div>
+          <div class="sequence-ribbon" id="sequenceRibbon">
+            <!-- Populated by app.js -->
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
