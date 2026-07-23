@@ -1,0 +1,16 @@
+# System & Python files
+.DS_Store
+__pycache__/
+
+# Personal / Duplicate files
+*Assignment*.pdf
+CHEMICAL SHIFT PART 1/
+*copy.csv
+
+# Generated Audio & Caches
+outputs/
+batch_music_outputs/
+downloaded_pdb_csvs/
+sonify_input_csvs/
+music_output.*
+all_backbone_final_freq.csv
