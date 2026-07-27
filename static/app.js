@@ -607,8 +607,6 @@ async function generateMusic() {
     accent_inst:      parseInt(document.getElementById("accentSelect") ? document.getElementById("accentSelect").value : 104),
     enable_drone:     document.getElementById("droneCheck") ? document.getElementById("droneCheck").checked : true,
     enable_tabla:     document.getElementById("tablaCheck") ? document.getElementById("tablaCheck").checked : true,
-    freq_min:         parseFloat(document.getElementById("freqMinInput") ? document.getElementById("freqMinInput").value : 240.0),
-    freq_max:         parseFloat(document.getElementById("freqMaxInput") ? document.getElementById("freqMaxInput").value : 480.0),
     pdb_id:           snapshotPdbId,
     bmrb_id:          snapshotBmrbId    // tells backend which protein folder to use
   };
