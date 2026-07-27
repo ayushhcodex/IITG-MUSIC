@@ -731,10 +731,11 @@ function setupPlayer(audioUrl, midiUrl, csvUrl) {
     midLink.download = `${prefix}_sonification.mid`;
   }
   
-  const csvLink = document.getElementById("linkDownloadCsv");
-  if (csvLink) {
-    csvLink.href = csvUrl;
-    csvLink.download = `${prefix}_dataset.csv`;
+  const csvLinkFinal = document.getElementById("linkDownloadCsvFinal");
+  if (csvLinkFinal) {
+    csvLinkFinal.href = csvUrl;
+    csvLinkFinal.download = `${prefix}_final_frequencies.csv`;
+    csvLinkFinal.style.display = "block";
   }
 }
 
