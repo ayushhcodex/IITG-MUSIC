@@ -1,0 +1,49 @@
+name: Build Windows Application
+
+on:
+  push:
+    branches: [ "main", "exp" ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller pywebview
+          
+      - name: Download and setup Fluidsynth
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/FluidSynth/fluidsynth/releases/download/v2.3.4/fluidsynth-2.3.4-win10-x64.zip" -OutFile "fluidsynth.zip"
+          Expand-Archive -Path "fluidsynth.zip" -DestinationPath "fluidsynth_temp"
+          # Rename the extracted inner folder to 'fluidsynth' and move it to the root
+          Get-ChildItem -Path fluidsynth_temp | Rename-Item -NewName "fluidsynth"
+          Move-Item -Path "fluidsynth_temp/fluidsynth" -Destination "."
+          
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller "MrFold Music.spec"
+          
+      - name: Compile Inno Setup Installer
+        shell: cmd
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows_installer.iss
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MrFold_Music_Windows_Installer
+          path: dist/MrFold_Music_Windows_Installer.exe
