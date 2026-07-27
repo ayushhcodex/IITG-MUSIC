@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cosmic Raga — Molecular Sonification Studio</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>MrFold Music — Molecular Sonification Studio</title>
+  <link rel="stylesheet" href="style.css?v=5" />
   <!-- 3Dmol.js WebGL Library -->
   <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
 </head>
@@ -15,7 +15,7 @@
     <div class="logo-container">
       <div class="logo-icon">🎵</div>
       <div class="logo-text">
-        <h1>Cosmic Raga</h1>
+        <h1>MrFold Music</h1>
         <span>Molecular Sonification & 3D Audio-Visual Studio</span>
       </div>
     </div>
@@ -36,6 +36,12 @@
     <!-- Left Column: Compact Studio Controls -->
     <section class="left-studio">
       
+      <!-- Theme Toggle -->
+      <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.15rem; margin-bottom: 0.85rem;">
+        <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">UI Theme</span>
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="btn-primary btn-compact" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; border-radius: 999px;">☀️ Light Mode</button>
+      </div>
+
       <!-- Input Mode Panel -->
       <div class="glass-panel">
         <h2 class="panel-title">1. Protein Data Source</h2>
@@ -135,6 +141,26 @@
             </select>
           </div>
           <div class="form-group">
+            <label class="form-label">Echo Instrument</label>
+            <select id="echoSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <option value="74">Bansuri (Flute)</option>
+              <option value="107">Santoor (Dulcimer)</option>
+              <option value="104">Sitar (Plucked String)</option>
+              <option value="0">Acoustic Piano</option>
+              <option value="40">Classical Violin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Accent Instrument</label>
+            <select id="accentSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <option value="104">Sitar (Plucked String)</option>
+              <option value="107">Santoor (Dulcimer)</option>
+              <option value="74">Bansuri (Flute)</option>
+              <option value="0">Acoustic Piano</option>
+              <option value="40">Classical Violin</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label class="form-label">Tempo Speed</label>
             <select id="tempoSelect" class="select-input" onchange="autoRegenerateIfReady()">
               <option value="1.0">1.0x (Scientific Default)</option>
@@ -142,12 +168,32 @@
               <option value="1.25">1.25x (Lively & Flowing)</option>
             </select>
           </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">
+            <input type="checkbox" id="droneCheck" checked onchange="autoRegenerateIfReady()" style="width: 16px; height: 16px;" />
+            <label for="droneCheck" class="form-label" style="margin-bottom: 0;">Enable Drone</label>
+          </div>
+          <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">
+            <input type="checkbox" id="tablaCheck" checked onchange="autoRegenerateIfReady()" style="width: 16px; height: 16px;" />
+            <label for="tablaCheck" class="form-label" style="margin-bottom: 0;">Enable Tabla</label>
+          </div>
+        </div>
+
+        <div class="grid-2">
           <div class="form-group">
             <label class="form-label">Spectrometer (MHz)</label>
             <input type="number" id="spectroInput" class="input-text" value="750" step="1" min="100" max="1500" onchange="autoRegenerateIfReady()" style="padding: 0.4rem; height: 38px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; width: 100%;" />
           </div>
-          <!-- Hidden echoSelect to preserve backend/app.js compatibility -->
-          <select id="echoSelect" style="display: none;"><option value="74" selected></option></select>
+          <div class="form-group">
+            <label class="form-label">Freq Range (Hz)</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="number" id="freqMinInput" class="input-text" value="240" step="10" min="20" max="2000" onchange="autoRegenerateIfReady()" style="padding: 0.4rem; height: 38px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; width: 100%;" />
+              <span style="color: white; line-height: 38px;">-</span>
+              <input type="number" id="freqMaxInput" class="input-text" value="480" step="10" min="20" max="2000" onchange="autoRegenerateIfReady()" style="padding: 0.4rem; height: 38px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; width: 100%;" />
+            </div>
+          </div>
         </div>
 
         <button class="btn-primary btn-generate" onclick="generateMusic()" id="btnGenerate">
@@ -175,6 +221,13 @@
             <span class="stage-subtitle" id="molSubtitle">BioNMR IITG</span>
           </div>
           <div class="stage-header-actions">
+            <select id="structureStyleSelect" class="select-input" onchange="changeStructureStyle(this.value)" style="width: auto; padding: 0.38rem 0.95rem; height: auto; border-radius: 999px; font-size: 0.82rem; background: rgba(20, 25, 42, 0.85); border: 1px solid rgba(0, 242, 254, 0.35); color: var(--accent-cyan); cursor: pointer;">
+              <option value="cartoon">Cartoon (PyMOL Style)</option>
+              <option value="surface">Surface (Chimera Style)</option>
+              <option value="stick">Stick</option>
+              <option value="sphere">Sphere</option>
+              <option value="line">Line</option>
+            </select>
             <button class="btn-spin-toggle" id="btnToggleSpin" onclick="toggleStructureRotation()" title="Toggle Continuous Clockwise 3D Molecular Rotation">
               <span>🔄 3D Motion: OFF</span>
             </button>
@@ -213,6 +266,7 @@
 
             <!-- Export Actions -->
             <div class="dock-exports">
+              <button class="btn-export-mini" id="btnRecordVideo" onclick="startVideoRecording()" title="Record 3D Viewer & Audio" style="background: rgba(255,50,50,0.2); border-color: rgba(255,50,50,0.5); color: #ff8888; cursor: pointer;">🔴 REC</button>
               <a class="btn-export-mini" id="linkDownloadWav" download="protein_sonification.wav" title="Download WAV Audio">🎵 WAV</a>
               <a class="btn-export-mini" id="linkDownloadMid" download="protein_sonification.mid" title="Download MIDI File">🎹 MIDI</a>
               <a class="btn-export-mini" id="linkDownloadCsv" download="protein_dataset.csv" title="Download CSV Dataset">📊 CSV</a>
@@ -241,6 +295,6 @@
 
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

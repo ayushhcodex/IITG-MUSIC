@@ -3,6 +3,7 @@ let currentPdbId = "1DMB";
 let currentBmrbId = "";        // BMRB ID from the last successful fetch
 let currentTimeline = [];
 let viewer = null;
+let currentStructureStyle = "cartoon";
 let activeResidueIndex = -1;
 let presetsMap = {};
 let isGenerating = false;
@@ -10,6 +11,69 @@ let pendingGenerate = false;   // true when a new dataset arrived while generati
 let noteBurstTimeout = null;
 let isSpinning = false;
 let spinAnimationId = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
+
+// ──────────────────────────────────────────────────────────────────────────
+// Helper to apply current 3Dmol structure style dynamically
+// ──────────────────────────────────────────────────────────────────────────
+function getBaseStyle() {
+  const styleObj = {};
+  if (currentStructureStyle === "surface") return {}; // Surfaces are added separately
+  
+  if (currentStructureStyle === "cartoon") {
+    styleObj[currentStructureStyle] = {
+      colorfunc: (atom) => {
+        if (atom.ss === "h") return "#00f2fe"; // Alpha helix
+        if (atom.ss === "s") return "#f857a6"; // Beta sheet
+        return "#f9d423"; // Random coil
+      },
+      style: "oval",
+      thickness: 1.2
+    };
+  } else {
+    styleObj[currentStructureStyle] = {
+      colorfunc: (atom) => {
+        if (atom.ss === "h") return "#00f2fe"; 
+        if (atom.ss === "s") return "#f857a6"; 
+        return "#f9d423"; 
+      }
+    };
+  }
+  return styleObj;
+}
+
+function changeStructureStyle(style) {
+  currentStructureStyle = style;
+  if (!viewer) return;
+  
+  // Clear surfaces first in case we switch out of surface mode
+  viewer.removeAllSurfaces();
+  
+  // Re-apply base style globally
+  viewer.setStyle({}, getBaseStyle());
+  
+  // Add surface if needed (Chimera-like VDW surface)
+  if (currentStructureStyle === "surface") {
+    viewer.addSurface($3Dmol.SurfaceType.VDW, {
+      opacity: 0.8, 
+      colorfunc: (atom) => {
+        if (atom.ss === "h") return "#00f2fe"; 
+        if (atom.ss === "s") return "#f857a6"; 
+        return "#f9d423"; 
+      }
+    });
+  }
+
+  // If there's an active residue, update its highlight over the base style
+  if (activeResidueIndex >= 0 && activeResidueIndex < currentTimeline.length) {
+    const resData = currentTimeline[activeResidueIndex];
+    highlight3DResidue(resData.sequence, resData.amino_acid, resData.svara);
+  } else {
+    viewer.render();
+  }
+}
 
 // ──────────────────────────────────────────────────────────────────────────
 // Helper to get distinct music emoji based on Svara (note) or residue index
@@ -206,8 +270,9 @@ function init3DViewer(pdbId) {
   if (!container) return;
   container.innerHTML = "";
   
+  const isLight = document.body.classList.contains("light-theme");
   viewer = $3Dmol.createViewer(container, {
-    backgroundColor: "#090a12",
+    backgroundColor: isLight ? "#e2e8f0" : "#090a12",
     id: "viewer3d"
   });
   
@@ -236,31 +301,15 @@ function load3DStructure(pdbId) {
   
   // multimodel: false ensures we only load Model 1 of NMR ensembles (preventing 20 stacked models!)
   $3Dmol.download("pdb:" + currentPdbId, viewer, { multimodel: false }, () => {
-    // Style cartoon backbone colored by secondary structure across the loaded model
-    viewer.setStyle({}, {
-      cartoon: {
-        colorfunc: (atom) => {
-          if (atom.ss === "h") return "#00f2fe"; // Alpha helix
-          if (atom.ss === "s") return "#f857a6"; // Beta sheet
-          return "#f9d423"; // Random coil
-        }
-      }
-    });
+    // Style backbone colored by secondary structure across the loaded model
+    changeStructureStyle(currentStructureStyle);
     viewer.zoomTo();
     viewer.render();
     document.getElementById("molSubtitle").textContent = "BioNMR IITG";
   }, (err) => {
     // If .pdb fails (e.g. mmCIF entry or network/404), try cif: fallback
     $3Dmol.download("cif:" + currentPdbId, viewer, { multimodel: false }, () => {
-      viewer.setStyle({}, {
-        cartoon: {
-          colorfunc: (atom) => {
-            if (atom.ss === "h") return "#00f2fe";
-            if (atom.ss === "s") return "#f857a6";
-            return "#f9d423";
-          }
-        }
-      });
+      changeStructureStyle(currentStructureStyle);
       viewer.zoomTo();
       viewer.render();
       document.getElementById("molSubtitle").textContent = "BioNMR IITG (mmCIF format)";
@@ -299,21 +348,19 @@ function highlight3DResidue(resiNum, aaName, svara = "") {
   const resiSelector = targetChain ? { chain: targetChain, resi: num } : { resi: num };
 
   // Reset all styles to secondary structure color on target chain
-  viewer.setStyle(baseSelector, {
-    cartoon: {
-      colorfunc: (atom) => {
-        if (atom.ss === "h") return "#00f2fe";
-        if (atom.ss === "s") return "#f857a6";
-        return "#f9d423";
-      }
-    }
-  });
+  viewer.setStyle(baseSelector, getBaseStyle());
   
   // Highlight currently sounding residue ONLY on primary chain so exactly ONE sphere appears!
-  viewer.setStyle(resiSelector, {
-    cartoon: { color: "#ffffff", thickness: 0.65 },
-    sphere: { color: aaColor, radius: 2.15 }
-  });
+  const highStyle = {};
+  if (currentStructureStyle !== "surface") {
+    highStyle[currentStructureStyle] = { color: "#ffffff", thickness: 0.65, radius: 0.65 };
+  }
+  if (currentStructureStyle !== 'sphere') {
+    highStyle.sphere = { color: aaColor, radius: 2.15 };
+  } else {
+    highStyle.sphere = { color: aaColor, radius: 2.6 };
+  }
+  viewer.setStyle(resiSelector, highStyle);
 
   // Attach crisp white music emoji right at the 3D sphere inside 3Dmol viewer!
   viewer.removeAllLabels();
@@ -556,10 +603,12 @@ async function generateMusic() {
     root_note:        parseInt(document.getElementById("rootSelect").value),
     tempo_multiplier: floatVal(document.getElementById("tempoSelect").value),
     lead_inst:        parseInt(document.getElementById("leadSelect").value),
-    echo_inst:        parseInt(document.getElementById("echoSelect").value || 74),
-    accent_inst:      104,
-    enable_drone:     true,
-    enable_tabla:     true,
+    echo_inst:        parseInt(document.getElementById("echoSelect") ? document.getElementById("echoSelect").value : 74),
+    accent_inst:      parseInt(document.getElementById("accentSelect") ? document.getElementById("accentSelect").value : 104),
+    enable_drone:     document.getElementById("droneCheck") ? document.getElementById("droneCheck").checked : true,
+    enable_tabla:     document.getElementById("tablaCheck") ? document.getElementById("tablaCheck").checked : true,
+    freq_min:         parseFloat(document.getElementById("freqMinInput") ? document.getElementById("freqMinInput").value : 240.0),
+    freq_max:         parseFloat(document.getElementById("freqMaxInput") ? document.getElementById("freqMaxInput").value : 480.0),
     pdb_id:           snapshotPdbId,
     bmrb_id:          snapshotBmrbId    // tells backend which protein folder to use
   };
@@ -645,9 +694,8 @@ function showRunSavedBadge(proteinFolder, runFolder, timelineUrl, finalFreqUrl, 
 }
 
 // Re-run sonification on the SAME already-loaded dataset.
-// The existing randomness in sonify.py (duration choices + volume) means the
-// WAV output will be novel each time even though the pitch order (Final_Freq
-// → MIDI note → Raag quantization) follows the same scientific rules.
+// With the new deterministic pipeline, the output is stable!
+// This button allows easy playback regeneration if parameters are changed.
 // The backend also overwrites the named {pdb_id}_dataset.csv after each run
 // so the downloadable CSV always matches the music just generated.
 async function regenerateMusic() {
@@ -800,6 +848,11 @@ function setupAudioListeners() {
     if (wrapper) wrapper.classList.remove("note-active");
     if (pointer) pointer.classList.remove("note-visible");
     activeResidueIndex = -1;
+    
+    // Stop recording if active
+    if (isRecording && mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
   });
 }
 
@@ -831,3 +884,138 @@ function formatTime(s) {
   const secs = Math.floor(s % 60);
   return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// Video Recording Feature (Canvas + Audio)
+// ──────────────────────────────────────────────────────────────────────────
+function startVideoRecording() {
+  if (isRecording) {
+    console.warn("Already recording!");
+    return;
+  }
+  
+  const canvas = document.querySelector("#mol3d canvas");
+  const audio = document.getElementById("audioPlayer");
+  
+  if (!canvas || !audio || !audio.src || audio.src === window.location.href) {
+    alert("Please load a protein and generate music before recording.");
+    return;
+  }
+  
+  // Force 3D motion ON
+  if (!isSpinning) {
+    toggleStructureRotation();
+  }
+  
+  const canvasStream = canvas.captureStream(30);
+  
+  // Set up Web Audio API for strict audio-video synchronization
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const dest = audioCtx.createMediaStreamDestination();
+  
+  if (!audio.mediaElementSource) {
+    audio.crossOrigin = "anonymous";
+    audio.mediaElementSource = audioCtx.createMediaElementSource(audio);
+  }
+  
+  // Clear previous routes, then route to the recorder AND the local speakers
+  audio.mediaElementSource.disconnect();
+  audio.mediaElementSource.connect(dest);
+  audio.mediaElementSource.connect(audioCtx.destination);
+  
+  // Resume context in case it was suspended
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  
+  const tracks = [...canvasStream.getTracks()];
+  if (dest.stream) {
+    tracks.push(...dest.stream.getTracks());
+  }
+  
+  const combinedStream = new MediaStream(tracks);
+  
+  try {
+    mediaRecorder = new MediaRecorder(combinedStream, { mimeType: "video/webm" });
+  } catch (e) {
+    mediaRecorder = new MediaRecorder(combinedStream); // fallback if webm not supported
+  }
+  
+  recordedChunks = [];
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) {
+      recordedChunks.push(e.data);
+    }
+  };
+  
+  mediaRecorder.onstop = () => {
+    isRecording = false;
+    const btn = document.getElementById("btnRecordVideo");
+    if (btn) {
+      btn.textContent = "🔴 REC";
+      btn.style.boxShadow = "";
+    }
+    
+    // Stop motion after recording
+    if (isSpinning) {
+      toggleStructureRotation();
+    }
+    
+    const blob = new Blob(recordedChunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    const prefix = currentPdbId || "protein";
+    a.download = `${prefix}_sonification.webm`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  };
+  
+  isRecording = true;
+  const btn = document.getElementById("btnRecordVideo");
+  if (btn) {
+    btn.textContent = "⏹ STOP";
+    btn.style.boxShadow = "0 0 12px rgba(255,50,50,0.8)";
+  }
+  
+  mediaRecorder.start();
+  
+  // Start playback from the beginning
+  audio.currentTime = 0;
+  audio.play();
+  const btnPlay = document.getElementById("btnPlayPause");
+  if(btnPlay) btnPlay.textContent = "⏸";
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Theme Toggle Logic
+// ──────────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  document.body.classList.toggle('light-theme');
+  const themeBtn = document.getElementById('themeToggleBtn');
+  const isLight = document.body.classList.contains('light-theme');
+  
+  if (isLight) {
+    themeBtn.innerHTML = '🌙 Dark Mode';
+    localStorage.setItem('theme', 'light');
+    if (viewer) { viewer.setBackgroundColor("#e2e8f0"); viewer.render(); }
+  } else {
+    themeBtn.innerHTML = '☀️ Light Mode';
+    localStorage.setItem('theme', 'dark');
+    if (viewer) { viewer.setBackgroundColor("#090a12"); viewer.render(); }
+  }
+}
+
+// Load theme on startup
+document.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-theme');
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) themeBtn.innerHTML = '🌙 Dark Mode';
+  }
+});
