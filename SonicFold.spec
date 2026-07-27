@@ -1,24 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-import sys
-import os
-
-a_datas = [
-    ('static', 'static'),
-    ('100 pdb with chemmical shift values .csv', '.'),
-    ('6188_simulated_hsqc_backbone_example_music.csv', '.'),
-    ('TimGM6mb.sf2', '.')
-]
-
-if sys.platform == 'win32':
-    if os.path.exists('fluidsynth'):
-        a_datas.append(('fluidsynth', 'fluidsynth'))
 
 a = Analysis(
     ['desktop.py'],
     pathex=[],
     binaries=[],
-    datas=a_datas,
+    datas=[('static', 'static'), ('100 pdb with chemmical shift values .csv', '.'), ('6188_simulated_hsqc_backbone_example_music.csv', '.'), ('TimGM6mb.sf2', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -34,7 +21,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='MrFold Music',
+    name='SonicFold',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -45,7 +32,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.ico'
 )
 coll = COLLECT(
     exe,
@@ -54,11 +40,11 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='MrFold Music',
+    name='SonicFold',
 )
 app = BUNDLE(
     coll,
-    name='MrFold Music.app',
-    icon='icon.ico',
+    name='SonicFold.app',
+    icon='icon.icns',
     bundle_identifier=None,
 )
