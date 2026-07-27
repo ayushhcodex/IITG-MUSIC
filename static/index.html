@@ -197,8 +197,9 @@
         </div>
 
         <button class="btn-primary btn-generate" onclick="generateMusic()" id="btnGenerate">
-          <span>🎼 Generate Music & Update CSV</span>
+          <span>🎼 Generate Music</span>
         </button>
+        <a id="linkDownloadCsvFinal" style="display: none; width: 100%; text-align: center; margin-top: 0.5rem; background: rgba(0,242,254,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,254,0.3); padding: 0.6rem; border-radius: 4px; text-decoration: none; font-weight: bold; cursor: pointer; transition: 0.2s;">📊 Download Final Frequency CSV</a>
       </div>
 
       <!-- Quick Tips Card -->
@@ -267,9 +268,10 @@
             <!-- Export Actions -->
             <div class="dock-exports">
               <button class="btn-export-mini" id="btnRecordVideo" onclick="startVideoRecording()" title="Record 3D Viewer & Audio" style="background: rgba(255,50,50,0.2); border-color: rgba(255,50,50,0.5); color: #ff8888; cursor: pointer;">🔴 REC</button>
-              <a class="btn-export-mini" id="linkDownloadWav" download="protein_sonification.wav" title="Download WAV Audio">🎵 WAV</a>
-              <a class="btn-export-mini" id="linkDownloadMid" download="protein_sonification.mid" title="Download MIDI File">🎹 MIDI</a>
-              <a class="btn-export-mini" id="linkDownloadCsv" download="protein_dataset.csv" title="Download CSV Dataset">📊 CSV</a>
+              <div class="export-actions">
+                <a class="btn-export-mini" id="linkDownloadWav" download="protein_sonification.wav" title="Download WAV Audio">🎵 WAV</a>
+                <a class="btn-export-mini" id="linkDownloadMid" download="protein_sonification.mid" title="Download MIDI File">🎹 MIDI</a>
+              </div>
             </div>
           </div>
 
