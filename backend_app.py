@@ -59,8 +59,6 @@ class SonifyRequest(BaseModel):
     accent_inst: int = 104
     enable_drone: bool = True
     enable_tabla: bool = True
-    freq_min: float = 240.0
-    freq_max: float = 480.0
     pdb_id: str = "1DMB"
     bmrb_id: str = ""        # filled by frontend from the fetch response
     spectrometer_mhz: float = 750.0
@@ -703,9 +701,7 @@ def create_sonification(req: SonifyRequest):
         echo_inst=req.echo_inst,
         accent_inst=req.accent_inst,
         enable_drone=req.enable_drone,
-        enable_tabla=req.enable_tabla,
-        freq_min=req.freq_min,
-        freq_max=req.freq_max
+        enable_tabla=req.enable_tabla
     )
 
     # ── Save timeline CSV inside the run folder ───────────────────────────────
@@ -754,8 +750,6 @@ def create_sonification(req: SonifyRequest):
         "echo_instrument":  req.echo_inst,
         "enable_drone":     req.enable_drone,
         "enable_tabla":     req.enable_tabla,
-        "freq_min":         req.freq_min,
-        "freq_max":         req.freq_max,
         "timestamp":        datetime.datetime.now().isoformat(timespec="seconds"),
         "total_residues":   result.get("total_residues", 0),
         "total_duration_s": result.get("total_duration", 0),
