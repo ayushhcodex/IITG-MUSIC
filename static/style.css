@@ -900,3 +900,120 @@ body.recording-mode .res-card {
 body.recording-mode .res-aa {
   font-size: 1.05rem;
 }
+
+/* Light Theme Overrides */
+body.light-theme {
+  --bg-dark: #f0f4f8;
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --bg-card: rgba(240, 244, 248, 0.7);
+  --border-glass: rgba(0, 0, 0, 0.1);
+  --text-main: #1a1f35;
+  --text-dim: #4a5568;
+  
+  --accent-cyan: #0088aa;
+  --accent-blue: #0066cc;
+  --accent-magenta: #cc0066;
+  background: radial-gradient(circle at 15% 15%, #e2e8f0 0%, #f0f4f8 60%),
+              radial-gradient(circle at 85% 85%, #edf2f7 0%, #f0f4f8 60%);
+  color: var(--text-main);
+}
+body.light-theme .app-header {
+  background: rgba(240, 244, 248, 0.92);
+}
+body.light-theme .panel-title {
+  color: #1a1f35;
+}
+body.light-theme .input-text, body.light-theme .select-input {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1f35;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+body.light-theme .tabs-header {
+  background: rgba(220, 225, 235, 0.65);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+body.light-theme .tab-btn.active {
+  background: rgba(0, 0, 0, 0.12);
+  color: #1a1f35;
+}
+body.light-theme .preset-card {
+  background: rgba(240, 244, 248, 0.8);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+body.light-theme .preset-card h4 {
+  color: #1a1f35;
+}
+body.light-theme .loaded-status-box {
+  background: rgba(0, 136, 170, 0.08);
+  border: 1px solid rgba(0, 136, 170, 0.25);
+}
+body.light-theme .tips-panel {
+  background: rgba(240, 230, 240, 0.65);
+}
+body.light-theme .tips-panel p {
+  color: #4a5568;
+}
+body.light-theme .stage-header {
+  background: rgba(240, 244, 248, 0.9);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+body.light-theme .stage-title-group h3 {
+  color: #1a1f35;
+}
+body.light-theme .mol-canvas-wrapper {
+  background: #e2e8f0;
+}
+body.light-theme .current-sounding-badge {
+  background: rgba(255, 255, 255, 0.82);
+  color: #0066cc;
+  border: 1px solid rgba(0, 136, 170, 0.35);
+}
+body.light-theme .stage-bottom-dock {
+  background: rgba(240, 244, 248, 0.95);
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+body.light-theme .btn-export-mini {
+  background: rgba(220, 225, 235, 0.8);
+  color: #1a1f35;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+body.light-theme .btn-spin-toggle {
+  background: rgba(220, 225, 235, 0.85);
+  color: #0066cc;
+}
+body.light-theme .player-timer {
+  color: #1a1f35;
+}
+body.light-theme .res-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+body.light-theme .res-card.active-res {
+  background: rgba(255, 255, 255, 1);
+  border-color: #0088aa;
+}
+body.light-theme .res-aa {
+  color: #1a1f35;
+}
+body.light-theme .res-name {
+  color: #4a5568;
+}
+body.light-theme .res-hz, body.light-theme .res-svara {
+  color: #4a5568;
+}
+body.light-theme .btn-record-mode {
+  color: #1a1f35;
+}
+body.light-theme .btn-primary {
+  color: #ffffff;
+}
+body.light-theme .logo-text h1 {
+  background: linear-gradient(to right, #1a1f35, #0066cc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+body.light-theme #structureStyleSelect {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #0066cc !important;
+  border-color: rgba(0, 136, 170, 0.4) !important;
+}

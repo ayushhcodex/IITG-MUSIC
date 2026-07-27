@@ -10,9 +10,9 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-import sonify
+import sonicfold_nmr.sonify as sonify
 
-app = FastAPI(title="Cosmic Raga: Molecular Sonification Webtool")
+app = FastAPI(title="MrFold Music: Molecular Sonification Webtool")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Load the 100-PDB chemical shift lookup table at startup.
@@ -59,6 +59,8 @@ class SonifyRequest(BaseModel):
     accent_inst: int = 104
     enable_drone: bool = True
     enable_tabla: bool = True
+    freq_min: float = 240.0
+    freq_max: float = 480.0
     pdb_id: str = "1DMB"
     bmrb_id: str = ""        # filled by frontend from the fetch response
     spectrometer_mhz: float = 750.0
@@ -270,18 +272,11 @@ def fetch_real_bmrb_data(bmrb_id: str) -> Optional[Dict[str, Any]]:
             h_vals = res["H"]
             n_vals = res["N"]
             
-            if h_vals and n_vals:
-                h_ppm = float(np.mean(h_vals))
-                n_ppm = float(np.mean(n_vals))
-            elif h_vals:
-                h_ppm = float(np.mean(h_vals))
-                n_ppm = 118.0
-            elif n_vals:
-                h_ppm = 8.0
-                n_ppm = float(np.mean(n_vals))
-            else:
-                h_ppm = 8.0
-                n_ppm = 118.0
+            if not h_vals or not n_vals:
+                continue
+                
+            h_ppm = float(np.mean(h_vals))
+            n_ppm = float(np.mean(n_vals))
                 
             # Pre-compute Final_Freq using the true known spectrometer MHz.
             h_hz = h_ppm * spec_mhz
@@ -708,7 +703,9 @@ def create_sonification(req: SonifyRequest):
         echo_inst=req.echo_inst,
         accent_inst=req.accent_inst,
         enable_drone=req.enable_drone,
-        enable_tabla=req.enable_tabla
+        enable_tabla=req.enable_tabla,
+        freq_min=req.freq_min,
+        freq_max=req.freq_max
     )
 
     # ── Save timeline CSV inside the run folder ───────────────────────────────
@@ -757,6 +754,8 @@ def create_sonification(req: SonifyRequest):
         "echo_instrument":  req.echo_inst,
         "enable_drone":     req.enable_drone,
         "enable_tabla":     req.enable_tabla,
+        "freq_min":         req.freq_min,
+        "freq_max":         req.freq_max,
         "timestamp":        datetime.datetime.now().isoformat(timespec="seconds"),
         "total_residues":   result.get("total_residues", 0),
         "total_duration_s": result.get("total_duration", 0),
@@ -805,5 +804,5 @@ app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    print("Launching Cosmic Raga Server on http://localhost:8000")
+    print("Launching MrFold Music Server on http://localhost:8000")
     uvicorn.run(app, host="0.0.0.0", port=8000)
