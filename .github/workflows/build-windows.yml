@@ -29,9 +29,12 @@ jobs:
         run: |
           Invoke-WebRequest -Uri "https://github.com/FluidSynth/fluidsynth/releases/download/v2.3.4/fluidsynth-2.3.4-win10-x64.zip" -OutFile "fluidsynth.zip"
           Expand-Archive -Path "fluidsynth.zip" -DestinationPath "fluidsynth_temp"
-          # Rename the extracted inner folder to 'fluidsynth' and move it to the root
-          Get-ChildItem -Path fluidsynth_temp | Rename-Item -NewName "fluidsynth"
-          Move-Item -Path "fluidsynth_temp/fluidsynth" -Destination "."
+          
+          if (Test-Path "fluidsynth_temp/fluidsynth-2.3.4-win10-x64") {
+              Move-Item -Path "fluidsynth_temp/fluidsynth-2.3.4-win10-x64" -Destination "fluidsynth"
+          } else {
+              Rename-Item -Path "fluidsynth_temp" -NewName "fluidsynth"
+          }
           
       - name: Build with PyInstaller
         run: |
