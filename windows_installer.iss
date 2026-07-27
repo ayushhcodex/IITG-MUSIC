@@ -7,6 +7,7 @@ OutputDir=dist
 OutputBaseFilename=MrFold_Music_Windows_Installer
 Compression=lzma2
 SolidCompression=yes
+SetupIconFile=icon.ico
 
 [Files]
 Source: "dist\MrFold Music\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
