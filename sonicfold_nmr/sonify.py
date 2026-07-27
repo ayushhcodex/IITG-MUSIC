@@ -330,7 +330,11 @@ def sonify_bmrb(
             mid_path = os.path.join(stems_dir, f"{name}.mid")
             wav_path = os.path.join(stems_dir, f"{name}.wav")
             try:
-                subprocess.run([fluidsynth_cmd, "-ni", "-F", wav_path, "-r", "44100", "-q", sf2_path, mid_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                kwargs = {}
+                if os.name == 'nt':
+                    kwargs['creationflags'] = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+                
+                subprocess.run([fluidsynth_cmd, "-ni", "-F", wav_path, "-r", "44100", "-q", sf2_path, mid_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kwargs)
                 wav_paths[name] = wav_path
             except FileNotFoundError:
                 print(f"Warning: fluidsynth not found. Cannot generate WAV for {name}.")
