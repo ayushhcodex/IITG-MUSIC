@@ -968,6 +968,9 @@ body.light-theme .current-sounding-badge {
   color: #0066cc;
   border: 1px solid rgba(0, 136, 170, 0.35);
 }
+body.light-theme .current-sounding-badge strong {
+  color: #1a1f35 !important;
+}
 body.light-theme .stage-bottom-dock {
   background: rgba(240, 244, 248, 0.95);
   border-top: 1px solid rgba(0,0,0,0.1);
@@ -993,7 +996,7 @@ body.light-theme .res-card.active-res {
   border-color: #0088aa;
 }
 body.light-theme .res-aa {
-  color: #1a1f35;
+  color: #1a1f35 !important;
 }
 body.light-theme .res-name {
   color: #4a5568;
@@ -1017,3 +1020,141 @@ body.light-theme #structureStyleSelect {
   color: #0066cc !important;
   border-color: rgba(0, 136, 170, 0.4) !important;
 }
+
+/* ============================================================
+   📺 FULLSCREEN VISUALIZATION SCREEN MODE
+   ============================================================ */
+
+.btn-fullscreen-toggle {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 100;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(7, 8, 13, 0.82);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.25s ease;
+}
+
+.btn-fullscreen-toggle:hover {
+  background: rgba(0, 242, 254, 0.15);
+  border-color: var(--accent-cyan);
+  transform: scale(1.1);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.5);
+}
+
+.btn-fullscreen-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Toggle icons based on fullscreen state */
+:fullscreen .btn-fullscreen-toggle .icon-enter {
+  display: none;
+}
+:fullscreen .btn-fullscreen-toggle .icon-exit {
+  display: block !important;
+}
+
+body.canvas-fullscreen-active .btn-fullscreen-toggle .icon-enter {
+  display: none;
+}
+body.canvas-fullscreen-active .btn-fullscreen-toggle .icon-exit {
+  display: block !important;
+}
+
+/* Hide bottom player/ribbon dock in fullscreen mode */
+:fullscreen .stage-bottom-dock {
+  display: none !important;
+}
+#stageCard:-webkit-full-screen .stage-bottom-dock {
+  display: none !important;
+}
+#stageCard:-moz-full-screen .stage-bottom-dock {
+  display: none !important;
+}
+
+/* Vendor Prefixes for Icon Toggles */
+#stageCard:-webkit-full-screen .btn-fullscreen-toggle .icon-enter {
+  display: none;
+}
+#stageCard:-webkit-full-screen .btn-fullscreen-toggle .icon-exit {
+  display: block !important;
+}
+
+#stageCard:-moz-full-screen .btn-fullscreen-toggle .icon-enter {
+  display: none;
+}
+#stageCard:-moz-full-screen .btn-fullscreen-toggle .icon-exit {
+  display: block !important;
+}
+
+/* Fullscreen Stage Card sizing and styling */
+#stageCard:fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: #090a12 !important;
+}
+
+#stageCard:-webkit-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: #090a12 !important;
+}
+
+#stageCard:-moz-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: #090a12 !important;
+}
+
+body.light-theme #stageCard:fullscreen {
+  background: #f0f4f8 !important;
+}
+
+body.light-theme #stageCard:-webkit-full-screen {
+  background: #f0f4f8 !important;
+}
+
+body.light-theme #stageCard:-moz-full-screen {
+  background: #f0f4f8 !important;
+}
+
+/* Light Theme Override */
+body.light-theme .btn-fullscreen-toggle {
+  background: rgba(255, 255, 255, 0.82);
+  color: #0066cc;
+  border: 1px solid rgba(0, 136, 170, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+body.light-theme .btn-fullscreen-toggle:hover {
+  background: rgba(0, 136, 170, 0.1);
+  color: #0088aa;
+}
+
+/* Hide idle sounding badge in fullscreen */
+#stageCard:fullscreen .current-sounding-badge.idle-status {
+  display: none !important;
+}
+#stageCard:-webkit-full-screen .current-sounding-badge.idle-status {
+  display: none !important;
+}
+#stageCard:-moz-full-screen .current-sounding-badge.idle-status {
+  display: none !important;
+}
+

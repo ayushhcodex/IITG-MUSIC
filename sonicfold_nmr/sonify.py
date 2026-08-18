@@ -179,8 +179,16 @@ def sonify_bmrb(
         max_tension = 1.0
     df['tension_norm'] = df['tension'] / max_tension
     
-    # Deterministic seeding based on amino acid sequence to guarantee reproducible output
-    aa_sequence = "".join([str(row.get("chem_comp_ID", row.get("res_name", "ALA"))) for _, row in df.iterrows()])
+    # Deterministic seeding — CRITICAL for cross-user consistency.
+    # Every user running the same protein must get bit-identical output.
+    # We seed NumPy's RNG with a SHA-256 hash of the full amino-acid sequence
+    # so the seed is 100 % data-driven and does NOT depend on wall-clock time,
+    # run order, or any per-user state.
+    aa_sequence = "".join(
+        [str(row["chem_comp_ID"]) if "chem_comp_ID" in row.index else
+         str(row["res_name"]) if "res_name" in row.index else "ALA"
+         for _, row in df.iterrows()]
+    )
     seed_val = int(hashlib.sha256(aa_sequence.encode('utf-8')).hexdigest(), 16) % (2**32)
     np.random.seed(seed_val)
     
@@ -343,74 +351,88 @@ def sonify_bmrb(
                 
         if fluidsynth_ok:
             print("Applying tension-scaled distortion and mixing...")
-            
+
             # Convert tension_timeline (beats) to seconds
             tension_sec = []
             for t in tension_timeline:
                 start_sec = get_time_in_seconds(t['beat'], tempo_changes)
                 end_sec = get_time_in_seconds(t['beat'] + t['duration_beats'], tempo_changes)
                 tension_sec.append({'start': start_sec, 'end': end_sec, 'tension': t['tension']})
-                
-            # Load WAVs
+
+            # Load WAVs — skip any stem whose file is missing or empty
             audio_data = {}
             target_len = 0
             sr = 44100
             for name, path in wav_paths.items():
-                sr_read, data = wav.read(path)
-                audio_data[name] = data
-                if len(data) > target_len:
-                    target_len = len(data)
-                    
-            # Pad all arrays to target_len
-            for name in audio_data:
-                data = audio_data[name]
-                if len(data) < target_len:
-                    pad_width = target_len - len(data)
-                    if data.ndim == 2:
-                        data = np.pad(data, ((0, pad_width), (0,0)), mode='constant')
-                    else:
-                        data = np.pad(data, (0, pad_width), mode='constant')
+                if not os.path.exists(path) or os.path.getsize(path) == 0:
+                    print(f"Warning: stem '{name}' WAV is missing or empty, skipping.")
+                    continue
+                try:
+                    sr_read, data = wav.read(path)
+                    if data.size == 0:
+                        print(f"Warning: stem '{name}' WAV has no samples, skipping.")
+                        continue
                     audio_data[name] = data
-                    
-            # Build gain envelope
-            gain_envelope = np.ones(target_len, dtype=np.float32)
-            for t in tension_sec:
-                start_samp = min(target_len, int(t['start'] * sr))
-                end_samp = min(target_len, int(t['end'] * sr))
-                gain_envelope[start_samp:end_samp] = 1.0 + t['tension'] * 15.0 # up to 16x gain
-                
-            def apply_distortion(audio_arr):
-                audio_f = audio_arr.astype(np.float32) / 32768.0
-                
-                if audio_f.ndim == 2:
-                    g = gain_envelope[:, np.newaxis]
-                else:
-                    g = gain_envelope
-                    
-                dist = np.tanh(audio_f * g)
-                return dist
-                
-            audio_data['sitar'] = apply_distortion(audio_data['sitar'])
-            audio_data['tabla'] = apply_distortion(audio_data['tabla'])
-            
-            # Convert others to float
-            for name in ['santoor', 'bansuri', 'tanpura']:
-                audio_data[name] = audio_data[name].astype(np.float32) / 32768.0
-                
-            # Mix
-            mixed = np.zeros_like(audio_data['santoor'], dtype=np.float32)
-            for data in audio_data.values():
-                mixed += data
-                
-            # Normalize
-            max_val = np.max(np.abs(mixed))
-            if max_val > 0:
-                mixed = mixed / max_val * 0.95 
-                
-            # Write to final WAV
-            mixed_int16 = (mixed * 32767.0).astype(np.int16)
-            wav.write(output_wav_path, sr, mixed_int16)
-            print(f"Done! Final mix saved to {output_wav_path}")
+                    if len(data) > target_len:
+                        target_len = len(data)
+                except Exception as e:
+                    print(f"Warning: could not read stem '{name}': {e}")
+
+            # Guard: if all stems failed to load, skip mixing
+            if not audio_data or target_len == 0:
+                print("Warning: no valid audio stems found. Skipping WAV mix.")
+            else:
+                # Determine channel count from the first loaded stem
+                # FluidSynth typically outputs stereo (2-channel) WAV.
+                first_stem = next(iter(audio_data.values()))
+                n_channels = first_stem.ndim  # 1 = mono, 2 = stereo
+
+                # Pad all arrays to target_len (handles stereo and mono uniformly)
+                for name in list(audio_data.keys()):
+                    data = audio_data[name]
+                    if len(data) < target_len:
+                        pad_width = target_len - len(data)
+                        if data.ndim == 2:
+                            data = np.pad(data, ((0, pad_width), (0, 0)), mode='constant')
+                        else:
+                            data = np.pad(data, (0, pad_width), mode='constant')
+                        audio_data[name] = data
+
+                # Build gain envelope — shape (target_len,) for broadcasting
+                gain_envelope = np.ones(target_len, dtype=np.float32)
+                for t in tension_sec:
+                    start_samp = min(target_len, int(t['start'] * sr))
+                    end_samp   = min(target_len, int(t['end']   * sr))
+                    gain_envelope[start_samp:end_samp] = 1.0 + t['tension'] * 15.0  # up to 16x gain
+
+                def apply_distortion(audio_arr):
+                    audio_f = audio_arr.astype(np.float32) / 32768.0
+                    # Broadcast gain_envelope to match mono OR stereo shape
+                    g = gain_envelope[:, np.newaxis] if audio_f.ndim == 2 else gain_envelope
+                    return np.tanh(audio_f * g)
+
+                audio_data['sitar'] = apply_distortion(audio_data['sitar'])
+                audio_data['tabla'] = apply_distortion(audio_data['tabla'])
+
+                # Convert others to float
+                for name in ['santoor', 'bansuri', 'tanpura']:
+                    if name in audio_data:
+                        audio_data[name] = audio_data[name].astype(np.float32) / 32768.0
+
+                # Mix — start from zeros with the correct shape (mono or stereo)
+                mixed = np.zeros((target_len,) if n_channels == 1 else (target_len, 2), dtype=np.float32)
+                for data in audio_data.values():
+                    mixed += data
+
+                # Normalize to 0.95 full-scale
+                max_val = np.max(np.abs(mixed))
+                if max_val > 0:
+                    mixed = mixed / max_val * 0.95
+
+                # Write to final WAV
+                mixed_int16 = (mixed * 32767.0).astype(np.int16)
+                wav.write(output_wav_path, sr, mixed_int16)
+                print(f"Done! Final mix saved to {output_wav_path}")
         else:
             print("Skipped WAV generation because fluidsynth is missing.")
 

@@ -214,7 +214,7 @@
     <!-- Right Column: Unified Audio-Visual Recording Stage Card -->
     <section class="right-stage" id="stageContainer">
       
-      <div class="stage-card">
+      <div class="stage-card" id="stageCard">
         
         <!-- Stage Top Bar -->
         <div class="stage-header">
@@ -237,16 +237,23 @@
         </div>
 
         <!-- Center 3D Molecular Canvas (Flexible height so it fits 100% in viewport) -->
-        <div class="mol-canvas-wrapper">
+        <div class="mol-canvas-wrapper" id="molCanvasWrapper">
           <div id="mol3d"></div>
 
           <!-- Floating Live Sounding HUD inside 3D Canvas -->
           <div class="live-hud-overlay">
-            <div class="current-sounding-badge" id="currentSoundingBadge">
+            <div class="current-sounding-badge idle-status" id="currentSoundingBadge">
               Ready — Click Play or select an amino acid residue below
             </div>
           </div>
 
+          <!-- Fullscreen Button (YouTube Style) -->
+          <button class="btn-fullscreen-toggle" id="btnFullscreenToggle" onclick="toggleCanvasFullscreen()" title="Toggle Fullscreen View (Press ESC to exit)">
+            <svg class="fullscreen-icon" viewBox="0 0 24 24" width="20" height="20">
+              <path class="icon-enter" fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+              <path class="icon-exit" fill="currentColor" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" style="display: none;"></path>
+            </svg>
+          </button>
         </div>
 
         <!-- Integrated Audio Controls & Bottom Amino Acid Sequence Strip -->
