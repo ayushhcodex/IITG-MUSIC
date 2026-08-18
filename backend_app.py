@@ -370,42 +370,58 @@ def fetch_protein_data(identifier: str):
         if os.path.exists(csv_path):
             df = pd.read_csv(csv_path)
             spec_mhz = KNOWN_SPECTROMETER_MHZ[identifier_clean]
+
+            # Find PDB ID for this BMRB entry so we can fetch real secondary structure
+            pdb_id = PRESETS.get(identifier_clean, {}).get("pdb_id", "")
+            if not pdb_id:
+                # Fall back to local BMRB→PDB lookup table
+                pdb_id = BMRB_TO_PDB.get(identifier_clean, "")
+
+            # Fetch the real secondary structure map from RCSB PDB.
+            # This guarantees that every user gets the same scientifically correct
+            # secondary structure assignment — not an artificial repeating pattern.
+            ss_map = get_pdb_ss_map(pdb_id) if pdb_id else {}
+
             rows = []
             for idx, row in df.iterrows():
                 h_ppm = float(row.get("X_shift", 8.0))
                 n_ppm = float(row.get("Y_shift", 118.0))
-                
+
                 h_hz = h_ppm * spec_mhz
                 n_hz = n_ppm * (spec_mhz / 10.0)
                 final_freq = round(float(np.sqrt(h_hz * n_hz)), 2)
-                
+
+                # Use the real RCSB-derived secondary structure for this residue.
+                # Fall back to "Random coil" for residues not covered by HELIX/SHEET
+                # records (e.g. loop regions), consistent with the BMRB fetch path.
+                seq_num = int(row.get("sequence", idx + 1))
+                struct = ss_map.get(seq_num, "Random coil")
+
                 rows.append({
-                    "sequence": int(row.get("sequence", idx + 1)),
-                    "chem_comp_ID": str(row.get("chem_comp_ID", "ALA")),
-                    "h_ppm": round(h_ppm, 4),
-                    "n_ppm": round(n_ppm, 4),
-                    "Final_Freq": final_freq,
-                    "Secondary Structure": "Alpha helix" if idx % 3 == 0 else (
-                        "Beta sheet" if idx % 3 == 1 else "Random coil")
+                    "sequence":            seq_num,
+                    "chem_comp_ID":        str(row.get("chem_comp_ID", "ALA")),
+                    "h_ppm":               round(h_ppm, 4),
+                    "n_ppm":               round(n_ppm, 4),
+                    "Final_Freq":          final_freq,
+                    "Secondary Structure": struct
                 })
             auto_csv = os.path.join(OUTPUTS_DIR, f"{identifier_clean}_dataset.csv")
             pd.DataFrame(rows).to_csv(auto_csv, index=False)
-            
-            # Find PDB ID if it's a preset
-            pdb_id = PRESETS.get(identifier_clean, {}).get("pdb_id", "")
+
             title = f"BMRB {identifier_clean} (Local Backbone)"
             if identifier_clean in PRESETS:
                 title = f"{PRESETS[identifier_clean]['title']} (BMRB {identifier_clean} / PDB {pdb_id})"
-                
+
             return {
-                "status": "success",
-                "pdb_id": pdb_id,
-                "bmrb_id": identifier_clean,
-                "title": title,
+                "status":           "success",
+                "pdb_id":           pdb_id,
+                "bmrb_id":          identifier_clean,
+                "title":            title,
                 "spectrometer_mhz": spec_mhz,
-                "rows": rows,
-                "csv_url": f"/outputs/{identifier_clean}_dataset.csv"
+                "rows":             rows,
+                "csv_url":          f"/outputs/{identifier_clean}_dataset.csv"
             }
+
 
     # ── STEP 2: Check hard-coded presets (bmrb_id or pdb_id) ─────────────────
     for bmrb_key, preset_data in PRESETS.items():

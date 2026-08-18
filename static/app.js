@@ -235,7 +235,68 @@ function setupKeyboardShortcuts() {
       viewer.render();
     }
   });
+
+  // Handle Fullscreen state change events
+  const onFullscreenChange = () => {
+    const isFullscreen = !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+
+    if (isFullscreen) {
+      document.body.classList.add("canvas-fullscreen-active");
+    } else {
+      document.body.classList.remove("canvas-fullscreen-active");
+    }
+
+    // Force viewer resize & render
+    setTimeout(() => {
+      if (viewer) {
+        viewer.resize();
+        viewer.render();
+      }
+    }, 100);
+  };
+
+  document.addEventListener("fullscreenchange", onFullscreenChange);
+  document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+  document.addEventListener("mozfullscreenchange", onFullscreenChange);
+  document.addEventListener("MSFullscreenChange", onFullscreenChange);
 }
+
+// Toggle Fullscreen on Molecular Canvas (YouTube style)
+function toggleCanvasFullscreen() {
+  const container = document.getElementById("stageCard");
+  if (!container) return;
+
+  if (!document.fullscreenElement &&
+      !document.mozFullScreenElement && 
+      !document.webkitFullscreenElement && 
+      !document.msFullscreenElement) {
+    if (container.requestFullscreen) {
+      container.requestFullscreen();
+    } else if (container.msRequestFullscreen) {
+      container.msRequestFullscreen();
+    } else if (container.mozRequestFullScreen) {
+      container.mozRequestFullScreen();
+    } else if (container.webkitRequestFullscreen) {
+      container.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+}
+
 
 // Toggle Continuous Clockwise Rotation of 3D Structure
 function toggleStructureRotation() {
@@ -339,28 +400,28 @@ function highlight3DResidue(resiNum, aaName, svara = "") {
 
   let num = parseInt(resiNum, 10);
   let matchedAtoms = viewer.selectedAtoms({ resi: num });
+  let finalResi = num;
   if (!matchedAtoms || matchedAtoms.length === 0) {
     matchedAtoms = viewer.selectedAtoms({ resi: String(resiNum) });
+    finalResi = String(resiNum);
   }
 
   const targetChain = (matchedAtoms && matchedAtoms.length > 0) ? matchedAtoms[0].chain : "";
   const baseSelector = targetChain ? { chain: targetChain } : {};
-  const resiSelector = targetChain ? { chain: targetChain, resi: num } : { resi: num };
+  const resiSelector = targetChain ? { chain: targetChain, resi: finalResi } : { resi: finalResi };
 
   // Reset all styles to secondary structure color on target chain
   viewer.setStyle(baseSelector, getBaseStyle());
   
   // Highlight currently sounding residue ONLY on primary chain so exactly ONE sphere appears!
   const highStyle = {};
-  if (currentStructureStyle !== "surface") {
-    highStyle[currentStructureStyle] = { color: "#ffffff", thickness: 0.65, radius: 0.65 };
-  }
   if (currentStructureStyle !== 'sphere') {
     highStyle.sphere = { color: aaColor, radius: 2.15 };
   } else {
     highStyle.sphere = { color: aaColor, radius: 2.6 };
   }
-  viewer.setStyle(resiSelector, highStyle);
+  
+  viewer.addStyle(resiSelector, highStyle);
 
   // Attach crisp white music emoji right at the 3D sphere inside 3Dmol viewer!
   viewer.removeAllLabels();
@@ -628,7 +689,11 @@ async function generateMusic() {
         currentTimeline = data.result.timeline;
         setupPlayer(data.audio_url, data.midi_url, data.csv_url);
         renderSequenceRibbon(currentTimeline);
-        document.getElementById("currentSoundingBadge").textContent = "Residues Synced — Ready for Screen Recording";
+        const badge = document.getElementById("currentSoundingBadge");
+        if (badge) {
+          badge.textContent = "Residues Synced — Ready for Screen Recording";
+          badge.classList.add("idle-status");
+        }
 
         // Show folder save confirmation badge
         showRunSavedBadge(data.protein_folder, data.run_folder, data.timeline_url, data.final_freq_url, data.info_url);
@@ -811,8 +876,12 @@ function setupAudioListeners() {
         const activeItem = currentTimeline[foundIndex];
         const aaColor = getAminoAcidColor(activeItem.amino_acid);
         
-        document.getElementById("currentSoundingBadge").innerHTML =
-          `Residue #${activeItem.sequence} : <strong style="color: ${aaColor}">${activeItem.amino_acid}</strong> (${activeItem.secondary_structure}) — Svara: ${activeItem.svara} (${activeItem.final_freq} Hz)`;
+        const badge = document.getElementById("currentSoundingBadge");
+        if (badge) {
+          badge.innerHTML =
+            `Residue #${activeItem.sequence} : <strong style="color: ${aaColor}">${activeItem.amino_acid}</strong> (${activeItem.secondary_structure}) — Svara: ${activeItem.svara} (${activeItem.final_freq} Hz)`;
+          badge.classList.remove("idle-status");
+        }
           
         document.querySelectorAll(".res-card").forEach(c => {
           c.classList.remove("active-res");

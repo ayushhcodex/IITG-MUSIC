@@ -3,6 +3,8 @@ name: Build Windows Application
 on:
   push:
     branches: [ "main", "exp" ]
+  release:
+    types: [ created ]      # also runs when a GitHub Release is published
   workflow_dispatch:
 
 jobs:
@@ -22,7 +24,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller pywebview
+          # Note: pyinstaller and pywebview are already listed in requirements.txt
           
       - name: Download and setup Fluidsynth
         shell: pwsh
@@ -51,3 +53,10 @@ jobs:
         with:
           name: MrFold_Music_Windows_Installer
           path: dist/MrFold_Music_Windows_Installer.exe
+
+      # When triggered by a Release event, attach the installer to the release
+      - name: Upload Installer to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/MrFold_Music_Windows_Installer.exe
