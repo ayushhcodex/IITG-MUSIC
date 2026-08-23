@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: cosmic-raga
+    name: mrfoldmusic
     env: docker
     envVars:
       - key: PYTHON_VERSION
