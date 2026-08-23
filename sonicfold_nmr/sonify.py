@@ -469,7 +469,19 @@ def sonify_bmrb(
                 if local_env:
                     kwargs['env'] = local_env
                 
-                subprocess.run([fluidsynth_cmd, "-ni", "-F", wav_path, "-r", "44100", "-q", sf2_path, mid_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kwargs)
+                res = subprocess.run(
+                    [fluidsynth_cmd, "-ni", "-F", wav_path, "-r", "44100", "-q", sf2_path, mid_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    **kwargs
+                )
+                if res.returncode != 0:
+                    print(f"Error: fluidsynth exited with code {res.returncode}")
+                    print(f"stdout: {res.stdout}")
+                    print(f"stderr: {res.stderr}")
+                    fluidsynth_ok = False
+                    break
                 wav_paths[name] = wav_path
             except FileNotFoundError:
                 print(f"Warning: fluidsynth not found. Cannot generate WAV for {name}.")
