@@ -843,8 +843,15 @@ def create_sonification(req: SonifyRequest):
     df_input.to_csv(protein_dataset_csv, index=False)
 
     # ── Copy files to flat outputs/ for backward-compat download links ────────
-    shutil.copy2(mid_path, flat_mid)
-    shutil.copy2(wav_path, flat_wav)
+    if os.path.exists(mid_path):
+        shutil.copy2(mid_path, flat_mid)
+    if os.path.exists(wav_path):
+        shutil.copy2(wav_path, flat_wav)
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail="FluidSynth failed to generate audio. Please check that FluidSynth is installed on the server."
+        )
 
     # ── Also update legacy named CSVs in flat outputs/ ────────────────────────
     # IMPORTANT: write df_input (the scientific dataset with chem_comp_ID, h_ppm,
