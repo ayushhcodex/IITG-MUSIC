@@ -8,5 +8,3 @@ MIDIUtil==1.2.1
 requests>=2.31.0
 pydantic>=2.7.0
 matplotlib
-pywebview>=5.0.0
-pyinstaller>=6.9.0
