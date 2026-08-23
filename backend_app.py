@@ -49,6 +49,59 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 # Mount outputs for downloading audio, MIDI, CSV
 app.mount("/outputs", StaticFiles(directory=OUTPUTS_DIR), name="outputs")
 
+def cleanup_old_runs(max_age_minutes: int = 15):
+    """Automatically clean up files and folders in outputs/ older than max_age_minutes to save disk space."""
+    import shutil
+    import time
+    
+    if not os.path.exists(OUTPUTS_DIR):
+        return
+        
+    now = time.time()
+    max_age_seconds = max_age_minutes * 60
+    
+    try:
+        # Iterate over everything in outputs/
+        for item in os.listdir(OUTPUTS_DIR):
+            item_path = os.path.join(OUTPUTS_DIR, item)
+            
+            # 1. Clean up subdirectories (protein folders containing runs)
+            if os.path.isdir(item_path):
+                # Iterate inside the protein folder
+                for subitem in os.listdir(item_path):
+                    subitem_path = os.path.join(item_path, subitem)
+                    if os.path.isdir(subitem_path) and subitem.startswith("run_"):
+                        try:
+                            mtime = os.path.getmtime(subitem_path)
+                            if (now - mtime) > max_age_seconds:
+                                shutil.rmtree(subitem_path)
+                                print(f"[cleanup] Deleted old run: {subitem_path}")
+                        except Exception as e:
+                            print(f"[cleanup] Error deleting run folder {subitem_path}: {e}")
+                
+                # If the protein folder is now empty, delete it too
+                try:
+                    if not os.listdir(item_path):
+                        os.rmdir(item_path)
+                        print(f"[cleanup] Deleted empty protein folder: {item_path}")
+                except Exception as e:
+                    print(f"[cleanup] Error deleting empty protein folder {item_path}: {e}")
+            
+            # 2. Clean up files (uploaded CSVs, legacy flat files)
+            else:
+                try:
+                    is_uploaded = item.startswith("uploaded_")
+                    is_legacy_run = item.startswith("run_") or item.startswith("music_") or item.endswith("_dataset.csv")
+                    if is_uploaded or is_legacy_run:
+                        mtime = os.path.getmtime(item_path)
+                        if (now - mtime) > max_age_seconds:
+                            os.remove(item_path)
+                            print(f"[cleanup] Deleted old file: {item_path}")
+                except Exception as e:
+                    print(f"[cleanup] Error deleting file {item_path}: {e}")
+    except Exception as e:
+        print(f"[cleanup] Error scanning outputs directory: {e}")
+
 class SonifyRequest(BaseModel):
     dataset: List[Dict[str, Any]]
     raag_name: str = "Yaman"
@@ -588,6 +641,7 @@ async def upload_csv(
     pdb_id: str = Form("1DMB"),
     is_raw_ppm: str = Form("false")
 ):
+    cleanup_old_runs(15)
     try:
         content = await file.read()
         temp_file = os.path.join(OUTPUTS_DIR, f"uploaded_{uuid.uuid4().hex[:6]}.csv")
@@ -658,6 +712,7 @@ async def upload_csv(
 @app.post("/api/sonify")
 def create_sonification(req: SonifyRequest):
     import datetime, shutil
+    cleanup_old_runs(15)
     if not req.dataset:
         raise HTTPException(status_code=400, detail="Dataset is empty")
 
