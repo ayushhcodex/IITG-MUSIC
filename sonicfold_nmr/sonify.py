@@ -437,9 +437,24 @@ def sonify_bmrb(
         fluidsynth_ok = True
         
         # Determine the correct fluidsynth command based on OS and bundling
+        local_bin = os.path.join(base_dir, "fluidsynth_unpacked", "usr", "bin", "fluidsynth")
+        local_env = None
+        
         if os.name == 'nt' and getattr(sys, 'frozen', False):
             # Bundled in PyInstaller on Windows
             fluidsynth_cmd = os.path.join(base_dir, "fluidsynth", "bin", "fluidsynth.exe")
+        elif os.path.exists(local_bin):
+            # Render free-tier (non-Docker) unpacked build
+            fluidsynth_cmd = local_bin
+            lib_dirs = []
+            for root, dirs, files in os.walk(os.path.join(base_dir, "fluidsynth_unpacked")):
+                if any(f.startswith("libfluidsynth.so") for f in files):
+                    lib_dirs.append(root)
+                    break
+            if lib_dirs:
+                local_env = os.environ.copy()
+                local_env["LD_LIBRARY_PATH"] = lib_dirs[0] + os.pathsep + local_env.get("LD_LIBRARY_PATH", "")
+                print(f"Using local fluidsynth binary at {local_bin} with LD_LIBRARY_PATH={lib_dirs[0]}")
         else:
             # Mac, Linux (Web), or non-frozen Windows
             fluidsynth_cmd = "fluidsynth"
@@ -451,6 +466,8 @@ def sonify_bmrb(
                 kwargs = {}
                 if os.name == 'nt':
                     kwargs['creationflags'] = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+                if local_env:
+                    kwargs['env'] = local_env
                 
                 subprocess.run([fluidsynth_cmd, "-ni", "-F", wav_path, "-r", "44100", "-q", sf2_path, mid_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kwargs)
                 wav_paths[name] = wav_path
