@@ -174,14 +174,65 @@ PRESETS = {
     },
     "27859": {
         "title": "Human Carbonic Anhydrase II",
+        "bmrb_id": "27859",
         "pdb_id": "1CA2",
         "description": "Essential human zinc metalloenzyme with extensive Beta-Sheet central core.",
         "file": None
     },
     "34308": {
         "title": "Human Carbonic Anhydrase II (Native)",
+        "bmrb_id": "34308",
         "pdb_id": "6HD2",
         "description": "Active-site conformational dynamics of carbonic anhydrase under native conditions.",
+        "file": None
+    },
+    "10104": {
+        "title": "Glutaredoxin (GRX)",
+        "bmrb_id": "10104",
+        "pdb_id": "1UJX",
+        "description": "Small redox enzyme that reduces oxidized cysteine residues in proteins.",
+        "file": None
+    },
+    "10025": {
+        "title": "Thioredoxin-h",
+        "bmrb_id": "10025",
+        "pdb_id": "1UL7",
+        "description": "Small protein involved in cellular disulfide reduction, showing mixed alpha/beta fold.",
+        "file": None
+    },
+    "10109": {
+        "title": "C-terminal domain of ERp29",
+        "bmrb_id": "10109",
+        "pdb_id": "1V5Q",
+        "description": "Endoplasmic reticulum protein helper involved in protein folding secretion.",
+        "file": None
+    },
+    "10111": {
+        "title": "Ubiquitin-conjugating enzyme E2",
+        "bmrb_id": "10111",
+        "pdb_id": "1V63",
+        "description": "Key player in the protein degradation pathway with highly ordered loop dynamics.",
+        "file": None
+    },
+    "10129": {
+        "title": "Human Calgizzarin (S100A11)",
+        "bmrb_id": "10129",
+        "pdb_id": "1WF5",
+        "description": "Calcium-binding protein exhibiting a symmetric helical bundle motif.",
+        "file": None
+    },
+    "10130": {
+        "title": "RGS4 Domain",
+        "bmrb_id": "10130",
+        "pdb_id": "1WF9",
+        "description": "Regulator of G-protein signaling showing all-alpha helical structure.",
+        "file": None
+    },
+    "10235": {
+        "title": "Acyl Carrier Protein (ACP)",
+        "bmrb_id": "10235",
+        "pdb_id": "1WGU",
+        "description": "Vital carrier protein in fatty acid synthesis with flexible helical segments.",
         "file": None
     }
 }

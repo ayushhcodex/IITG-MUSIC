@@ -462,8 +462,9 @@ async function loadPresets() {
         <p>${p.description}</p>
       `;
       card.onclick = () => {
-        document.getElementById("fetchInput").value = p.pdb_id;
-        fetchOnlineData(p.pdb_id);
+        const id = p.bmrb_id || p.pdb_id;
+        document.getElementById("fetchInput").value = id;
+        fetchOnlineData(id, true);
       };
       container.appendChild(card);
     });
@@ -514,7 +515,7 @@ function renderInitialSequenceRibbon(dataset) {
 }
 
 // Fetch protein online (BMRB / PDB)
-async function fetchOnlineData(customId = null) {
+async function fetchOnlineData(customId = null, autoPlay = false) {
   const inputId = customId || document.getElementById("fetchInput").value.trim() || "25237";
   try {
     const res = await fetch(`/api/fetch/${encodeURIComponent(inputId)}`);
@@ -534,7 +535,7 @@ async function fetchOnlineData(customId = null) {
       renderInitialSequenceRibbon(data.rows);
       
       // Auto render audio composition immediately so ribbon & player are ready to record
-      generateMusic();
+      generateMusic(autoPlay);
     } else {
       const errMsg = data.message || data.detail || "No NMR chemical shift data available.";
       alert("⚠️ " + errMsg);
@@ -694,7 +695,7 @@ function autoRegenerateIfReady() {
 }
 
 // Render Indian Classical Composition
-async function generateMusic() {
+async function generateMusic(autoPlay = false) {
   if (!currentDataset || currentDataset.length === 0) {
     return;
   }
@@ -756,6 +757,14 @@ async function generateMusic() {
         currentTimeline = data.result.timeline;
         setupPlayer(data.audio_url, data.midi_url, data.csv_url);
         renderSequenceRibbon(currentTimeline);
+        
+        if (autoPlay) {
+          const audio = document.getElementById("audioPlayer");
+          if (audio) {
+            audio.play().catch(e => console.log("Auto-play blocked by browser. User interaction needed."));
+          }
+        }
+        
         const badge = document.getElementById("currentSoundingBadge");
         if (badge) {
           badge.textContent = "Residues Synced — Ready for Screen Recording";
