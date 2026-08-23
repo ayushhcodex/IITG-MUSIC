@@ -1,6 +1,20 @@
 # System & Python files
 .DS_Store
 __pycache__/
+*.pyc
+
+# Distribution / Build / Virtualenvs
+build/
+dist/
+fluidsynth/
+*.egg-info/
+venv/
+.venv/
+.env
+
+# Editor settings
+.vscode/
+.idea/
 
 # Personal / Duplicate files
 *Assignment*.pdf

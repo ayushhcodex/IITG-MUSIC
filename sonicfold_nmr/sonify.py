@@ -10,6 +10,7 @@ import hashlib
 import scipy.io.wavfile as wav
 
 RAAG_SCALES = {
+    # Indian Classical (Ragas)
     "Yaman": {
         "intervals": [0, 2, 4, 6, 7, 9, 11],
         "names": ["Sa", "Re", "Ga", "Ma#", "Pa", "Dha", "Ni"]
@@ -29,6 +30,39 @@ RAAG_SCALES = {
     "Malkauns": {
         "intervals": [0, 3, 5, 8, 10],
         "names": ["Sa", "ga", "Ma", "dha", "ni"]
+    },
+    # Western Classical / Modes
+    "Major": {
+        "intervals": [0, 2, 4, 5, 7, 9, 11],
+        "names": ["Do", "Re", "Mi", "Fa", "Sol", "La", "Ti"]
+    },
+    "Natural Minor": {
+        "intervals": [0, 2, 3, 5, 7, 8, 10],
+        "names": ["Do", "Re", "me", "Fa", "Sol", "le", "te"]
+    },
+    "Dorian": {
+        "intervals": [0, 2, 3, 5, 7, 9, 10],
+        "names": ["Do", "Re", "me", "Fa", "Sol", "La", "te"]
+    },
+    "Phrygian": {
+        "intervals": [0, 1, 3, 5, 7, 8, 10],
+        "names": ["Do", "ra", "me", "Fa", "Sol", "le", "te"]
+    },
+    "Lydian": {
+        "intervals": [0, 2, 4, 6, 7, 9, 11],
+        "names": ["Do", "Re", "Mi", "fi", "Sol", "La", "Ti"]
+    },
+    "Mixolydian": {
+        "intervals": [0, 2, 4, 5, 7, 9, 10],
+        "names": ["Do", "Re", "Mi", "Fa", "Sol", "La", "te"]
+    },
+    "Locrian": {
+        "intervals": [0, 1, 3, 5, 6, 8, 10],
+        "names": ["Do", "ra", "me", "Fa", "se", "le", "te"]
+    },
+    "Chromatic": {
+        "intervals": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "names": ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
     }
 }
 
@@ -67,6 +101,48 @@ def get_time_in_seconds(target_beat, tempo_changes):
         sec += (target_beat - curr_b) / (curr_tempo / 60.0)
     return sec
 
+THEME_PRESETS = {
+    "Indian Classical": {
+        "lead": 107,     # Santoor
+        "echo": 74,      # Bansuri
+        "accent": 104,   # Sitar
+        "drone": 105,    # Tanpura
+        "tabla_channel": 9,
+        "tabla_program": None,
+        "tabla_notes": {
+            "bass": 35,
+            "snare": 38,
+            "high": 39
+        }
+    },
+    "Western Orchestral": {
+        "lead": 40,      # Violin
+        "echo": 73,      # Flute
+        "accent": 45,    # Pizzicato Strings
+        "drone": 48,     # String Ensemble 1
+        "tabla_channel": 0,
+        "tabla_program": 47, # Timpani
+        "tabla_notes": {
+            "bass": 36,  # Low C
+            "snare": 43, # G
+            "high": 48   # C
+        }
+    },
+    "Ambient Electronic": {
+        "lead": 80,      # Lead 1 (square)
+        "echo": 91,      # Pad 4 (choir)
+        "accent": 98,    # FX 3 (crystal)
+        "drone": 89,     # Pad 2 (warm)
+        "tabla_channel": 9,
+        "tabla_program": None,
+        "tabla_notes": {
+            "bass": 36,  # Bass drum 1
+            "snare": 38, # Snare drum 1
+            "high": 42   # Closed Hi-Hat
+        }
+    }
+}
+
 def sonify_bmrb(
     csv_path,
     output_mid_path,
@@ -80,7 +156,8 @@ def sonify_bmrb(
     enable_drone=True,
     enable_tabla=True,
     freq_min=240,
-    freq_max=480
+    freq_max=480,
+    theme_name="Indian Classical"
 ):
     df = pd.read_csv(csv_path)
     
@@ -149,10 +226,33 @@ def sonify_bmrb(
         'tanpura': MIDIFile(1)
     }
     
-    midis['santoor'].addProgramChange(0, 0, 0, int(lead_inst))
-    midis['bansuri'].addProgramChange(0, 0, 0, int(echo_inst))
-    midis['sitar'].addProgramChange(0, 0, 0, int(accent_inst))
-    midis['tanpura'].addProgramChange(0, 0, 0, 105)
+    # Resolve instruments based on theme
+    theme_data = THEME_PRESETS.get(theme_name, THEME_PRESETS["Indian Classical"])
+    
+    if theme_name == "Indian Classical":
+        # Keep exact backward compatibility
+        lead_prog = int(lead_inst)
+        echo_prog = int(echo_inst)
+        accent_prog = int(accent_inst)
+        drone_prog = 105
+        tabla_chan = 9
+        tabla_prog = None
+        tabla_notes = theme_data["tabla_notes"]
+    else:
+        lead_prog = theme_data["lead"]
+        echo_prog = theme_data["echo"]
+        accent_prog = theme_data["accent"]
+        drone_prog = theme_data["drone"]
+        tabla_chan = theme_data["tabla_channel"]
+        tabla_prog = theme_data["tabla_program"]
+        tabla_notes = theme_data["tabla_notes"]
+        
+    midis['santoor'].addProgramChange(0, 0, 0, lead_prog)
+    midis['bansuri'].addProgramChange(0, 0, 0, echo_prog)
+    midis['sitar'].addProgramChange(0, 0, 0, accent_prog)
+    midis['tanpura'].addProgramChange(0, 0, 0, drone_prog)
+    if tabla_prog is not None:
+        midis['tabla'].addProgramChange(0, tabla_chan, 0, tabla_prog)
     
     time = 0.0
     prev_region = None
@@ -192,6 +292,16 @@ def sonify_bmrb(
     seed_val = int(hashlib.sha256(aa_sequence.encode('utf-8')).hexdigest(), 16) % (2**32)
     np.random.seed(seed_val)
     
+    # Rhythmic notes setup (transposed for Timpani in Western Orchestral theme)
+    if theme_name == "Western Orchestral":
+        bass_note = root_note - 24
+        snare_note = root_note - 17
+        high_note = root_note - 12
+    else:
+        bass_note = tabla_notes["bass"]
+        snare_note = tabla_notes["snare"]
+        high_note = tabla_notes["high"]
+        
     for i, row in df.iterrows():
         region = str(row[struct_col])
         
@@ -245,15 +355,15 @@ def sonify_bmrb(
         if i % 8 == 0:
             midis['sitar'].addNote(0, 0, max(midi_note - 5, 24), time, 1.2, 65)
             
-        # Tabla rhythm (Teentaal structure)
+        # Rhythmic track (Tabla or Western/Electronic drums)
         if enable_tabla:
             beat = i % 16
             if beat in [0, 8]:
-                midis['tabla'].addNote(0, 9, 35, time, 0.4, 90) # Bass (Dha)
+                midis['tabla'].addNote(0, tabla_chan, bass_note, time, 0.4, 90)
             elif beat in [4, 12]:
-                midis['tabla'].addNote(0, 9, 38, time, 0.4, 80) # Snare (Tin)
+                midis['tabla'].addNote(0, tabla_chan, snare_note, time, 0.4, 80)
             elif beat in [2, 6, 10, 14]:
-                midis['tabla'].addNote(0, 9, 39, time, 0.2, 70) # High (Na)
+                midis['tabla'].addNote(0, tabla_chan, high_note, time, 0.2, 70)
                 
         # Record event for frontend synchronization
         seq_num = row.get("sequence", i + 1)

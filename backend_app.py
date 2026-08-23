@@ -64,6 +64,7 @@ class SonifyRequest(BaseModel):
     pdb_id: str = "1DMB"
     bmrb_id: str = ""        # filled by frontend from the fetch response
     spectrometer_mhz: float = 750.0
+    theme_name: str = "Indian Classical"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -721,7 +722,8 @@ def create_sonification(req: SonifyRequest):
         enable_drone=req.enable_drone,
         enable_tabla=req.enable_tabla,
         freq_min=req.freq_min,
-        freq_max=req.freq_max
+        freq_max=req.freq_max,
+        theme_name=req.theme_name
     )
 
     # ── Save timeline CSV inside the run folder ───────────────────────────────
@@ -763,6 +765,7 @@ def create_sonification(req: SonifyRequest):
         "pdb_id":           clean_pdb,
         "bmrb_id":          clean_bmrb,
         "protein_folder":   protein_folder,
+        "theme":            req.theme_name,
         "raag":             req.raag_name,
         "root_note":        req.root_note,
         "tempo_multiplier": req.tempo_multiplier,

@@ -193,6 +193,7 @@ function getAminoAcidColor(aa) {
 window.addEventListener("DOMContentLoaded", () => {
   init3DViewer("1DMB");
   loadPresets();
+  onThemeChange();
   fetchOnlineData("25237");
   setupAudioListeners();
   setupKeyboardShortcuts();
@@ -621,6 +622,71 @@ function updateLoadedStatusError(errMsg) {
   document.getElementById("loadedSub").textContent = errMsg;
 }
 
+const THEME_SCALES = {
+  "Indian Classical": [
+    { value: "Yaman", label: "Yaman (Serene Evening)" },
+    { value: "Bhairav", label: "Bhairav (Majestic Morning)" },
+    { value: "Bhupali", label: "Bhupali (Joyful Pentatonic)" },
+    { value: "Kafi", label: "Kafi (Expressive Dynamic)" },
+    { value: "Malkauns", label: "Malkauns (Deep Meditative)" }
+  ],
+  "Western Orchestral": [
+    { value: "Major", label: "Major / Ionian (Happy & Bright)" },
+    { value: "Natural Minor", label: "Natural Minor / Aeolian (Introspective)" },
+    { value: "Dorian", label: "Dorian (Mysterious)" },
+    { value: "Phrygian", label: "Phrygian (Dark / Tension)" },
+    { value: "Lydian", label: "Lydian (Ethereal)" },
+    { value: "Mixolydian", label: "Mixolydian (Grand & Folk)" },
+    { value: "Locrian", label: "Locrian (Highly Unstable / Disordered)" },
+    { value: "Chromatic", label: "Chromatic (All 12 Semitones)" }
+  ],
+  "Ambient Electronic": [
+    { value: "Major", label: "Major / Ionian (Bright)" },
+    { value: "Natural Minor", label: "Natural Minor / Aeolian (Serious)" },
+    { value: "Dorian", label: "Dorian (Cinematic)" },
+    { value: "Phrygian", label: "Phrygian (Space / Dark)" },
+    { value: "Lydian", label: "Lydian (Dreamy)" },
+    { value: "Mixolydian", label: "Mixolydian (Sci-Fi)" },
+    { value: "Locrian", label: "Locrian (Glitchy / Unstable)" },
+    { value: "Chromatic", label: "Chromatic (All 12 Semitones)" }
+  ]
+};
+
+function onThemeChange() {
+  const theme = document.getElementById("themeSelect").value;
+  const raagSelect = document.getElementById("raagSelect");
+  const scaleLabel = document.getElementById("scaleLabel");
+  const instrumentCustomizationRow = document.getElementById("instrumentCustomizationRow");
+
+  // Update label
+  if (scaleLabel) {
+    scaleLabel.textContent = theme === "Indian Classical" ? "Raag Mood" : "Scale / Mode";
+  }
+
+  // Populate options
+  if (raagSelect) {
+    raagSelect.innerHTML = "";
+    const options = THEME_SCALES[theme] || THEME_SCALES["Indian Classical"];
+    options.forEach(opt => {
+      const option = document.createElement("option");
+      option.value = opt.value;
+      option.textContent = opt.label;
+      raagSelect.appendChild(option);
+    });
+  }
+
+  // Toggle instrument customization row: hide for Western / Electronic because presets are pre-set
+  if (instrumentCustomizationRow) {
+    if (theme === "Indian Classical") {
+      instrumentCustomizationRow.style.display = "grid";
+    } else {
+      instrumentCustomizationRow.style.display = "none";
+    }
+  }
+
+  autoRegenerateIfReady();
+}
+
 function autoRegenerateIfReady() {
   if (currentDataset && !isGenerating) {
     generateMusic();
@@ -671,7 +737,8 @@ async function generateMusic() {
     freq_min:         parseFloat(document.getElementById("freqMinInput") ? document.getElementById("freqMinInput").value : 240.0),
     freq_max:         parseFloat(document.getElementById("freqMaxInput") ? document.getElementById("freqMaxInput").value : 480.0),
     pdb_id:           snapshotPdbId,
-    bmrb_id:          snapshotBmrbId    // tells backend which protein folder to use
+    bmrb_id:          snapshotBmrbId,    // tells backend which protein folder to use
+    theme_name:       document.getElementById("themeSelect").value
   };
   
   try {

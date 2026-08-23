@@ -111,26 +111,41 @@
 
         <div class="grid-2">
           <div class="form-group">
-            <label class="form-label">Raag Mood</label>
-            <select id="raagSelect" class="select-input" onchange="autoRegenerateIfReady()">
-              <option value="Yaman">Yaman (Serene Evening)</option>
-              <option value="Bhairav">Bhairav (Majestic Morning)</option>
-              <option value="Bhupali">Bhupali (Joyful Pentatonic)</option>
-              <option value="Kafi">Kafi (Expressive Dynamic)</option>
-              <option value="Malkauns">Malkauns (Deep Meditative)</option>
+            <label class="form-label">Aesthetic Theme</label>
+            <select id="themeSelect" class="select-input" onchange="onThemeChange()">
+              <option value="Indian Classical">Indian Classical</option>
+              <option value="Western Orchestral">Western Orchestral</option>
+              <option value="Ambient Electronic">Ambient Electronic</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Base Root Note</label>
-            <select id="rootSelect" class="select-input" onchange="autoRegenerateIfReady()">
-              <option value="60">Sa = C4 (Standard)</option>
-              <option value="62">Sa = D4 (Bright)</option>
-              <option value="57">Sa = A3 (Deep Warm)</option>
+            <label class="form-label" id="scaleLabel">Raag / Scale</label>
+            <select id="raagSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <!-- Populated dynamically -->
             </select>
           </div>
         </div>
 
         <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" id="rootLabel">Base Root Note (Sa / Tonic)</label>
+            <select id="rootSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <option value="60">C4 (Standard)</option>
+              <option value="62">D4 (Bright)</option>
+              <option value="57">A3 (Deep Warm)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tempo Speed</label>
+            <select id="tempoSelect" class="select-input" onchange="autoRegenerateIfReady()">
+              <option value="1.0">1.0x (Scientific Default)</option>
+              <option value="0.75">0.75x (Contemplative)</option>
+              <option value="1.25">1.25x (Lively & Flowing)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2" id="instrumentCustomizationRow">
           <div class="form-group">
             <label class="form-label">Lead Instrument</label>
             <select id="leadSelect" class="select-input" onchange="autoRegenerateIfReady()">
@@ -159,14 +174,6 @@
               <option value="74">Bansuri (Flute)</option>
               <option value="0">Acoustic Piano</option>
               <option value="40">Classical Violin</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tempo Speed</label>
-            <select id="tempoSelect" class="select-input" onchange="autoRegenerateIfReady()">
-              <option value="1.0">1.0x (Scientific Default)</option>
-              <option value="0.75">0.75x (Contemplative)</option>
-              <option value="1.25">1.25x (Lively & Flowing)</option>
             </select>
           </div>
         </div>
