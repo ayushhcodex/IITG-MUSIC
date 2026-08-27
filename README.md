@@ -1,3 +1,13 @@
+---
+title: MrFold Music Studio
+emoji: 🎵
+colorFrom: indigo
+colorTo: pink
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # MrFold Music Studio - Molecular Sonification
 
 MrFold Music Studio is a web and desktop tool that translates protein secondary structure and chemical shift data (BMRB / PDB) into Indian Classical Music (Ragas). 

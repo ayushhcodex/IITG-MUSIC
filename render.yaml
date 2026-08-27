@@ -1,9 +1,4 @@
 services:
   - type: web
     name: mrfoldmusic
-    env: python
-    buildCommand: "./build_render.sh"
-    startCommand: "uvicorn backend_app:app --host 0.0.0.0 --port $PORT"
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.10
+    env: docker

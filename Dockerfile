@@ -16,5 +16,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Command to run the application. 
-# Render provides the PORT environment variable.
-CMD uvicorn backend_app:app --host 0.0.0.0 --port ${PORT:-8000}
+# Hugging Face Spaces requires port 7860 by default; Render provides PORT.
+CMD uvicorn backend_app:app --host 0.0.0.0 --port ${PORT:-7860}
