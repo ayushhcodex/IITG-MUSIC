@@ -1594,11 +1594,12 @@ body.light-theme .fs-search-btn:hover {
 /* Center container for Search + MrFold Music */
 .fs-center-container {
   display: none;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   align-items: center;
   gap: 1.5rem;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  white-space: nowrap;
 }
 
 #stageCard:fullscreen .fs-center-container { display: flex; }
