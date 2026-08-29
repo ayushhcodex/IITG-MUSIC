@@ -149,8 +149,8 @@ body {
   min-height: 0;
   display: grid;
   grid-template-columns: 360px 1fr;
-  gap: 1.2rem;
-  padding: 1rem 1.8rem;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
   overflow: hidden;
 }
 

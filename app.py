@@ -57,21 +57,53 @@ with gr.Blocks(title="MrFold Music Studio") as demo:
     gr.HTML(
         """
         <style>
-          .gradio-container { padding: 0 !important; max-width: 100% !important; }
+          .gradio-container { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
           footer { display: none !important; }
         </style>
         <iframe
           src="/gradio_api/custom/"
-          style="width:100%; height:96vh; border:none; display:block;"
+          style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;"
           allow="autoplay"
           title="MrFold Music Studio"
         ></iframe>
         """,
     )
 
+gradio_css = """
+body, html {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background-color: #07080d !important;
+}
+.gradio-container {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100vh !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: #07080d !important;
+}
+#mrfold-wrapper {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+}
+iframe {
+  width: 100% !important;
+  height: 100vh !important;
+  border: none !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+"""
+
 # ── 4. Launch ─────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(css=gradio_css)
 else:
     # HF Gradio runner imports app.py as a module
-    demo.launch(prevent_thread_lock=True)
+    demo.launch(prevent_thread_lock=True, css=gradio_css)
