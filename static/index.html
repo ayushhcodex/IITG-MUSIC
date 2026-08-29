@@ -211,13 +211,15 @@
           <div class="stage-title-group">
             <h3 id="molTitle">Maltose Binding Protein (PDB: 1DMB)</h3>
             <span class="stage-subtitle" id="molSubtitle">BioNMR IITG</span>
+          </div>
+          
+          <div class="fs-center-container">
             <div class="fs-search-box" id="fsSearchBox">
               <input type="text" id="fsSearchInput" class="fs-search-input" placeholder="PDB / BMRB" value="1DMB" onkeydown="if(event.key==='Enter')fsLoadProtein()" />
               <button class="fs-search-btn" onclick="fsLoadProtein()" title="Load">→</button>
             </div>
+            <div class="fs-center-title">MrFold Music</div>
           </div>
-          
-          <div class="fs-center-title">MrFold Music</div>
           
           <div class="stage-header-actions">
             <select id="structureStyleSelect" class="select-input" onchange="changeStructureStyle(this.value)" style="width: auto; padding: 0.38rem 0.95rem; height: auto; border-radius: 999px; font-size: 0.82rem; cursor: pointer;">

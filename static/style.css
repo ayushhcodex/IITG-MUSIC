@@ -1521,13 +1521,7 @@ body.light-theme .fullscreen-loader-text {
   left: 1.25rem !important;
 }
 
-/* Fullscreen Search Box */
-.fs-search-box {
-  display: none; /* Hidden in normal mode */
-  align-items: center;
-  gap: 0.25rem;
-  margin-left: 0.75rem;
-}
+/* Fullscreen Search Box components */
 
 .fs-search-input {
   width: 110px;
@@ -1597,37 +1591,32 @@ body.light-theme .fs-search-btn:hover {
   background: rgba(0, 0, 0, 0.08);
 }
 
-/* Show search box only in fullscreen */
-#stageCard:fullscreen .fs-search-box {
-  display: flex !important;
-}
-#stageCard:-webkit-full-screen .fs-search-box {
-  display: flex !important;
-}
-#stageCard:-moz-full-screen .fs-search-box {
-  display: flex !important;
-}
-
-/* In fullscreen, align title group items horizontally */
-#stageCard:fullscreen .stage-title-group {
-  align-items: center;
-}
-#stageCard:-webkit-full-screen .stage-title-group {
-  align-items: center;
-}
-#stageCard:-moz-full-screen .stage-title-group {
-  align-items: center;
-}
-
-/* Center title (MrFold Music) */
-.fs-center-title {
+/* Center container for Search + MrFold Music */
+.fs-center-container {
   display: none;
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: #ffffff;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  align-items: center;
+  gap: 1.5rem;
+}
+
+#stageCard:fullscreen .fs-center-container { display: flex; }
+#stageCard:-webkit-full-screen .fs-center-container { display: flex; }
+#stageCard:-moz-full-screen .fs-center-container { display: flex; }
+
+/* The search box within the center container */
+.fs-search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Center title */
+.fs-center-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ffffff;
   pointer-events: none;
   letter-spacing: 0.5px;
 }
@@ -1636,22 +1625,11 @@ body.light-theme .fs-center-title {
   color: #000000;
 }
 
-#stageCard:fullscreen .stage-header {
-  position: relative;
-}
-#stageCard:-webkit-full-screen .stage-header {
-  position: relative;
-}
-#stageCard:-moz-full-screen .stage-header {
-  position: relative;
-}
+#stageCard:fullscreen .stage-header { position: relative; }
+#stageCard:-webkit-full-screen .stage-header { position: relative; }
+#stageCard:-moz-full-screen .stage-header { position: relative; }
 
-#stageCard:fullscreen .fs-center-title {
-  display: block;
-}
-#stageCard:-webkit-full-screen .fs-center-title {
-  display: block;
-}
-#stageCard:-moz-full-screen .fs-center-title {
-  display: block;
-}
+/* Align title group items horizontally */
+#stageCard:fullscreen .stage-title-group { align-items: center; }
+#stageCard:-webkit-full-screen .stage-title-group { align-items: center; }
+#stageCard:-moz-full-screen .stage-title-group { align-items: center; }
