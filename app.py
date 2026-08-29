@@ -71,9 +71,14 @@ def custom_create_app(*args, **kwargs):
 
 gradio.routes.App.create_app = custom_create_app
 
+js_redirect = """
+function() {
+    window.location.href = window.location.origin + "/index.html" + window.location.search;
+}
+"""
+
 # 3. Create a minimal Gradio Blocks app to trigger the ZeroGPU validation and redirect to our FastAPI app
-with gr.Blocks() as demo:
-    gr.HTML("<script>window.location.href = window.location.origin + '/index.html' + window.location.search;</script>")
+with gr.Blocks(js=js_redirect) as demo:
     gr.Markdown("# Redirecting to MrFold Music Studio...")
     btn = gr.Button("GPU Activator")
     btn.click(fn=dummy_gpu_fn)
