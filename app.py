@@ -3,38 +3,6 @@ import os
 import gradio as gr
 import gradio.routes
 from backend_app import app as fastapi_app
-from fastapi.responses import HTMLResponse, FileResponse
-
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
-
-# Explicitly register endpoints for static assets on fastapi_app to override Gradio's SPA router
-# We register them both under the root (for local run) and under /api/ (to bypass Gradio's middleware on Hugging Face)
-@fastapi_app.get("/", response_class=HTMLResponse)
-@fastapi_app.get("/index.html", response_class=HTMLResponse)
-@fastapi_app.get("/api/index.html", response_class=HTMLResponse)
-def read_root():
-    with open(os.path.join(STATIC_DIR, "index.html"), "r") as f:
-        return HTMLResponse(content=f.read(), status_code=200)
-
-@fastapi_app.get("/app.js")
-@fastapi_app.get("/api/app.js")
-def read_app_js():
-    return FileResponse(os.path.join(STATIC_DIR, "app.js"))
-
-@fastapi_app.get("/style.css")
-@fastapi_app.get("/api/style.css")
-def read_style_css():
-    return FileResponse(os.path.join(STATIC_DIR, "style.css"))
-
-@fastapi_app.get("/icon.png")
-@fastapi_app.get("/api/icon.png")
-def read_icon_png():
-    return FileResponse(os.path.join(STATIC_DIR, "icon.png"))
-
-@fastapi_app.get("/favicon.ico")
-@fastapi_app.get("/api/favicon.ico")
-def read_favicon():
-    return FileResponse(os.path.join(STATIC_DIR, "icon.png"))
 
 # 1. Define the dummy spaces.GPU function that Hugging Face ZeroGPU requires at startup
 try:
@@ -47,47 +15,32 @@ except ImportError:
     def dummy_gpu_fn():
         pass
 
-# 2. Monkey-patch Gradio's FastAPI application creator to inject our FastAPI app routes
+# 2. Monkey-patch Gradio's FastAPI application creator to mount our FastAPI app as a fallback Mount
 original_create_app = gradio.routes.App.create_app
 
 def custom_create_app(*args, **kwargs):
     app = original_create_app(*args, **kwargs)
     
-    api_routes = []
-    static_route = None
+    # Mount our backend FastAPI app at the end of the routing table as a fallback.
+    # This ensures Gradio handles its own routes (e.g. startup checks, styling) first,
+    # and all other routes (like /index.html, /api/sonify, /outputs/...) fall through to our FastAPI app.
+    from starlette.routing import Mount
+    app.routes.append(Mount("/", fastapi_app, name="fastapi_fallback"))
     
-    for route in fastapi_app.routes:
-        # Identify the catch-all static files mount on /
-        if hasattr(route, "name") and route.name == "static":
-            static_route = route
-        else:
-            api_routes.append(route)
-            
-    # Prepend API and output routes so they take precedence over Gradio
-    for route in api_routes:
-        app.routes.insert(0, route)
-        
-    # Append the static catch-all mount to the very end so it acts as a fallback,
-    # ensuring Gradio's internal routes (like /gradio_api/startup-events) match first.
-    if static_route:
-        app.routes.append(static_route)
-        
-    print("FastAPI routes successfully injected into Gradio app with prioritized fallback routing.")
+    print("FastAPI fallback successfully mounted to Gradio App.")
     return app
 
 gradio.routes.App.create_app = custom_create_app
 
-js_redirect = """
-function() {
-    window.location.href = window.location.origin + "/api/index.html" + window.location.search;
-}
-"""
-
-# 3. Create a minimal Gradio Blocks app to trigger the ZeroGPU validation and redirect to our FastAPI app
-with gr.Blocks(js=js_redirect) as demo:
-    gr.Markdown("# Redirecting to MrFold Music Studio...")
-    btn = gr.Button("GPU Activator")
+# 3. Create a clean Gradio Blocks app that hosts our web studio inside a same-origin iframe
+with gr.Blocks() as demo:
+    # Hidden button to satisfy Hugging Face ZeroGPU's check for a GPU-decorated function bound to an event
+    btn = gr.Button("ZeroGPU Activator", visible=False)
     btn.click(fn=dummy_gpu_fn)
+    
+    # Embed the FastAPI application directly in an iframe pointing to our mounted /index.html path.
+    # Because it is served from the same domain, it works seamlessly with zero CORS issues.
+    gr.HTML('<iframe src="/index.html" style="width:100%; height:950px; border:none; border-radius:8px;"></iframe>')
 
 if __name__ == "__main__":
     # Hugging Face sets PORT environment variable, defaults to 7860 for Spaces
