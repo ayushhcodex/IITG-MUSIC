@@ -8,4 +8,3 @@ MIDIUtil==1.2.1
 requests>=2.31.0
 pydantic>=2.7.0
 matplotlib
-huggingface-hub<=0.22.2
