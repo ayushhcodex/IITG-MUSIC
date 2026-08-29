@@ -1212,3 +1212,75 @@ body.light-theme .btn-fullscreen-toggle:hover {
   display: none !important;
 }
 
+/* Horizontal structure style options styles */
+.structure-style-options-horizontal {
+  display: none; /* Hidden by default in normal mode */
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-style-option {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(20, 25, 42, 0.85);
+  border: 1px solid var(--accent-border);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-style-option:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+}
+
+.btn-style-option.active {
+  background: #ffffff;
+  color: #07080d;
+  border-color: #ffffff;
+}
+
+/* Light Theme Overrides for Horizontal Options */
+body.light-theme .btn-style-option {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000000;
+  border-color: #000000;
+}
+
+body.light-theme .btn-style-option:hover {
+  color: #000000;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .btn-style-option.active {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+/* Fullscreen triggers to hide dropdown and show horizontal bar */
+#stageCard:fullscreen #structureStyleSelect {
+  display: none !important;
+}
+#stageCard:fullscreen .structure-style-options-horizontal {
+  display: flex !important;
+}
+
+#stageCard:-webkit-full-screen #structureStyleSelect {
+  display: none !important;
+}
+#stageCard:-webkit-full-screen .structure-style-options-horizontal {
+  display: flex !important;
+}
+
+#stageCard:-moz-full-screen #structureStyleSelect {
+  display: none !important;
+}
+#stageCard:-moz-full-screen .structure-style-options-horizontal {
+  display: flex !important;
+}
+

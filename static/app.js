@@ -68,6 +68,7 @@ function getBaseStyle() {
 
 function changeStructureStyle(style) {
   currentStructureStyle = style;
+  updateHorizontalStyleButtons(style);
   if (!viewer) return;
   
   // Clear surfaces first in case we switch out of surface mode
@@ -95,6 +96,25 @@ function changeStructureStyle(style) {
   } else {
     viewer.render();
   }
+}
+
+function selectHorizontalStyle(value) {
+  const select = document.getElementById("structureStyleSelect");
+  if (select) {
+    select.value = value;
+  }
+  changeStructureStyle(value);
+}
+
+function updateHorizontalStyleButtons(value) {
+  const buttons = document.querySelectorAll(".btn-style-option");
+  buttons.forEach(btn => {
+    if (btn.getAttribute("data-value") === value) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
 }
 
 // ──────────────────────────────────────────────────────────────────────────
