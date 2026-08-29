@@ -750,7 +750,7 @@ async function generateMusic(autoPlay = false) {
     });
     const data = await res.json();
     
-    if (data.status === "success") {
+    if (res.ok && data.status === "success") {
       // Only update the UI if this generation matches the CURRENTLY loaded protein
       // (i.e., no newer protein was loaded while we were generating)
       if (!pendingGenerate) {
@@ -775,6 +775,9 @@ async function generateMusic(autoPlay = false) {
         showRunSavedBadge(data.protein_folder, data.run_folder, data.timeline_url, data.final_freq_url, data.info_url);
 
       }
+    } else {
+      const errMsg = data.detail || data.message || "Unknown server error occurred during audio generation.";
+      alert("FluidSynth Error:\n" + errMsg);
     }
   } catch (err) {
     console.error("Error rendering composition:", err);
