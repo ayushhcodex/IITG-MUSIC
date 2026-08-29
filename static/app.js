@@ -1,3 +1,25 @@
+// Detect if running inside Hugging Face Gradio subpath
+const API_PREFIX = window.location.pathname.includes("/gradio_api/custom") ? "/gradio_api/custom" : "";
+
+function resolveUrl(url) {
+  if (!url || typeof url !== "string") return url;
+  if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:")) return url;
+  if (API_PREFIX && url.startsWith(API_PREFIX)) return url;
+  if (url.startsWith("/api/") || url.startsWith("/outputs/")) {
+    return `${API_PREFIX}${url}`;
+  }
+  return url;
+}
+
+// Global fetch override to automatically prefix relative API/output paths
+const originalFetch = window.fetch;
+window.fetch = function(input, init) {
+  if (typeof input === "string") {
+    input = resolveUrl(input);
+  }
+  return originalFetch(input, init);
+};
+
 let currentDataset = null;
 let currentPdbId = "1DMB";
 let currentBmrbId = "";        // BMRB ID from the last successful fetch
@@ -525,7 +547,7 @@ async function fetchOnlineData(customId = null, autoPlay = false) {
       currentPdbId   = data.pdb_id;
       currentBmrbId  = data.bmrb_id || "";   // store BMRB ID for folder naming
       
-      updateLoadedStatus(data.title, data.rows.length, data.csv_url, data.pdb_id);
+      updateLoadedStatus(data.title, data.rows.length, resolveUrl(data.csv_url), data.pdb_id);
       load3DStructure(data.pdb_id);
       
       if (data.spectrometer_mhz) {
@@ -576,7 +598,7 @@ async function uploadCsvFile() {
       currentDataset = data.rows;
       currentPdbId   = data.pdb_id;
       currentBmrbId  = data.bmrb_id || "";   // may be empty for uploaded CSVs
-      updateLoadedStatus(data.title, data.rows.length, data.csv_url, data.pdb_id);
+      updateLoadedStatus(data.title, data.rows.length, resolveUrl(data.csv_url), data.pdb_id);
       load3DStructure(data.pdb_id);
       renderInitialSequenceRibbon(data.rows);
       generateMusic();
@@ -606,7 +628,7 @@ function updateLoadedStatus(title, count, csvUrl, pdbId = "") {
   if (csvUrl) {
     const link = document.getElementById("linkDownloadCsv");
     if (link) {
-      link.href = csvUrl;
+      link.href = resolveUrl(csvUrl);
       const prefix = currentBmrbId ? `BMRB_${currentBmrbId}` : (currentPdbId ? `PDB_${currentPdbId}` : `protein`);
       link.download = `${prefix}_dataset.csv`;
     }
@@ -772,7 +794,13 @@ async function generateMusic(autoPlay = false) {
         }
 
         // Show folder save confirmation badge
-        showRunSavedBadge(data.protein_folder, data.run_folder, data.timeline_url, data.final_freq_url, data.info_url);
+        showRunSavedBadge(
+          data.protein_folder,
+          data.run_folder,
+          resolveUrl(data.timeline_url),
+          resolveUrl(data.final_freq_url),
+          resolveUrl(data.info_url)
+        );
 
       }
     } else {
@@ -858,26 +886,26 @@ function floatVal(v) {
 // Setup Audio Player UI
 function setupPlayer(audioUrl, midiUrl, csvUrl) {
   const audio = document.getElementById("audioPlayer");
-  audio.src = audioUrl;
+  audio.src = resolveUrl(audioUrl);
   audio.load();
   
   const prefix = currentBmrbId ? `BMRB_${currentBmrbId}` : (currentPdbId ? `PDB_${currentPdbId}` : `protein`);
   
   const wavLink = document.getElementById("linkDownloadWav");
   if (wavLink) {
-    wavLink.href = audioUrl;
+    wavLink.href = resolveUrl(audioUrl);
     wavLink.download = `${prefix}_sonification.wav`;
   }
   
   const midLink = document.getElementById("linkDownloadMid");
   if (midLink) {
-    midLink.href = midiUrl;
+    midLink.href = resolveUrl(midiUrl);
     midLink.download = `${prefix}_sonification.mid`;
   }
   
   const csvLinkFinal = document.getElementById("linkDownloadCsvFinal");
   if (csvLinkFinal) {
-    csvLinkFinal.href = csvUrl;
+    csvLinkFinal.href = resolveUrl(csvUrl);
     csvLinkFinal.download = `${prefix}_final_frequencies.csv`;
     csvLinkFinal.style.display = "block";
   }
