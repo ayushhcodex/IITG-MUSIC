@@ -3,6 +3,31 @@ import os
 import gradio as gr
 import gradio.routes
 from backend_app import app as fastapi_app
+from fastapi.responses import HTMLResponse, FileResponse
+
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+
+# Explicitly register endpoints for static assets on fastapi_app to override Gradio's SPA router
+@fastapi_app.get("/", response_class=HTMLResponse)
+def read_root():
+    with open(os.path.join(STATIC_DIR, "index.html"), "r") as f:
+        return HTMLResponse(content=f.read(), status_code=200)
+
+@fastapi_app.get("/app.js")
+def read_app_js():
+    return FileResponse(os.path.join(STATIC_DIR, "app.js"))
+
+@fastapi_app.get("/style.css")
+def read_style_css():
+    return FileResponse(os.path.join(STATIC_DIR, "style.css"))
+
+@fastapi_app.get("/icon.png")
+def read_icon_png():
+    return FileResponse(os.path.join(STATIC_DIR, "icon.png"))
+
+@fastapi_app.get("/favicon.ico")
+def read_favicon():
+    return FileResponse(os.path.join(STATIC_DIR, "icon.png"))
 
 # 1. Define the dummy spaces.GPU function that Hugging Face ZeroGPU requires at startup
 try:
