@@ -30,12 +30,13 @@ def custom_create_app(*args, **kwargs):
     target_idx = len(app.routes)
     for idx, route in enumerate(app.routes):
         path = getattr(route, "path", "")
-        if "{" in path or path == "/":
+        # Only match the root route or catch-all route (avoid matching parameterized API routes like /run/{api_name})
+        if path == "/" or "path:path" in path:
             target_idx = idx
             break
             
-    # Insert our FastAPI app as a fallback Mount right before the first wildcard route.
-    # This allows Gradio's explicit routes (e.g. startup events, assets) to match first,
+    # Insert our FastAPI app as a fallback Mount right before the first wildcard/root route.
+    # This allows Gradio's explicit routes (e.g. startup events, assets) to match successfully,
     # and redirects all general requests (including root /, /index.html, /api/..., /outputs/...)
     # straight to our custom sonification studio backend.
     from starlette.routing import Mount
@@ -65,3 +66,9 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
     print(f"Launching Gradio app on port {port}...")
     demo.launch(server_name="0.0.0.0", server_port=port)
+else:
+    # Running as a module (HF Gradio runner imports this file).
+    # launch() must be called here so the Gradio runner can pick up the app.
+    port = int(os.environ.get("PORT", 7860))
+    print(f"[HF runner] Launching Gradio app on port {port}...")
+    demo.launch(server_name="0.0.0.0", server_port=port, prevent_thread_lock=True)

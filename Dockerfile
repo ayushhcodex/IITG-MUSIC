@@ -16,12 +16,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# Pre-create the outputs and static dirs with correct permissions
-# HF Docker Spaces run as a non-root user (uid 1000), /app is writable
+# Pre-create the outputs and static dirs
 RUN mkdir -p /app/outputs /app/static
 
-# HF Docker Spaces expose port 7860
+# Expose port (HF Spaces uses 7860; Render provides PORT env var)
 EXPOSE 7860
 
-# Run uvicorn directly — serves backend_app (FastAPI + static HTML frontend)
-CMD ["uvicorn", "backend_app:app", "--host", "0.0.0.0", "--port", "7860"]
+# Run uvicorn — Hugging Face Spaces uses port 7860; Render provides PORT
+CMD uvicorn backend_app:app --host 0.0.0.0 --port ${PORT:-7860}
