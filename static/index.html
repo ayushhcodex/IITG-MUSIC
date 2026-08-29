@@ -247,10 +247,44 @@
 
           <!-- Music style option panel (Only visible on the left side in fullscreen mode) -->
           <div class="music-theme-options-vertical" id="musicThemeOptionsVertical">
-            <div class="music-theme-title">Aesthetic Style</div>
+
+            <!-- Indian Classical -->
             <button class="btn-music-option active" data-value="Indian Classical" onclick="selectMusicAesthetic('Indian Classical')">Indian Classical</button>
+            <div class="music-sub-options" id="subOptionsIndian">
+              <button class="btn-music-sub active" data-scale="Yaman" onclick="selectMusicScale('Indian Classical','Yaman')">Yaman</button>
+              <button class="btn-music-sub" data-scale="Bhairav" onclick="selectMusicScale('Indian Classical','Bhairav')">Bhairav</button>
+              <button class="btn-music-sub" data-scale="Bhupali" onclick="selectMusicScale('Indian Classical','Bhupali')">Bhupali</button>
+              <button class="btn-music-sub" data-scale="Kafi" onclick="selectMusicScale('Indian Classical','Kafi')">Kafi</button>
+              <button class="btn-music-sub" data-scale="Malkauns" onclick="selectMusicScale('Indian Classical','Malkauns')">Malkauns</button>
+            </div>
+
+            <!-- Western Orchestral -->
             <button class="btn-music-option" data-value="Western Orchestral" onclick="selectMusicAesthetic('Western Orchestral')">Western Orchestral</button>
+            <div class="music-sub-options" id="subOptionsWestern" style="display: none;">
+              <button class="btn-music-sub" data-scale="Major" onclick="selectMusicScale('Western Orchestral','Major')">Major</button>
+              <button class="btn-music-sub" data-scale="Natural Minor" onclick="selectMusicScale('Western Orchestral','Natural Minor')">Minor</button>
+              <button class="btn-music-sub" data-scale="Dorian" onclick="selectMusicScale('Western Orchestral','Dorian')">Dorian</button>
+              <button class="btn-music-sub" data-scale="Phrygian" onclick="selectMusicScale('Western Orchestral','Phrygian')">Phrygian</button>
+              <button class="btn-music-sub" data-scale="Lydian" onclick="selectMusicScale('Western Orchestral','Lydian')">Lydian</button>
+              <button class="btn-music-sub" data-scale="Mixolydian" onclick="selectMusicScale('Western Orchestral','Mixolydian')">Mixolydian</button>
+            </div>
+
+            <!-- Ambient Electronic -->
             <button class="btn-music-option" data-value="Ambient Electronic" onclick="selectMusicAesthetic('Ambient Electronic')">Ambient Electronic</button>
+            <div class="music-sub-options" id="subOptionsAmbient" style="display: none;">
+              <button class="btn-music-sub" data-scale="Major" onclick="selectMusicScale('Ambient Electronic','Major')">Major</button>
+              <button class="btn-music-sub" data-scale="Natural Minor" onclick="selectMusicScale('Ambient Electronic','Natural Minor')">Minor</button>
+              <button class="btn-music-sub" data-scale="Dorian" onclick="selectMusicScale('Ambient Electronic','Dorian')">Dorian</button>
+              <button class="btn-music-sub" data-scale="Phrygian" onclick="selectMusicScale('Ambient Electronic','Phrygian')">Phrygian</button>
+              <button class="btn-music-sub" data-scale="Lydian" onclick="selectMusicScale('Ambient Electronic','Lydian')">Lydian</button>
+            </div>
+
+            <!-- Play / Pause Controls -->
+            <div class="fullscreen-playback-controls">
+              <button class="btn-fs-playback" id="btnFsPlay" onclick="fsPlay()" title="Play">▶</button>
+              <button class="btn-fs-playback" id="btnFsPause" onclick="fsPause()" title="Pause">⏸</button>
+            </div>
+
           </div>
 
           <!-- Fullscreen Audio Loader Overlay -->

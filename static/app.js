@@ -1234,7 +1234,7 @@ function selectMusicAesthetic(themeValue) {
   }
   onThemeChange();
   
-  // Highlight active button immediately
+  // Highlight active button and show/hide sub-options
   updateMusicAestheticButtons(themeValue);
 }
 
@@ -1247,4 +1247,62 @@ function updateMusicAestheticButtons(themeValue) {
       btn.classList.remove("active");
     }
   });
+
+  // Show/hide sub-option panels
+  const panelMap = {
+    "Indian Classical": "subOptionsIndian",
+    "Western Orchestral": "subOptionsWestern",
+    "Ambient Electronic": "subOptionsAmbient"
+  };
+  Object.entries(panelMap).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = (key === themeValue) ? "flex" : "none";
+    }
+  });
+}
+
+function selectMusicScale(themeValue, scaleValue) {
+  // First make sure the parent aesthetic is selected
+  const themeSelect = document.getElementById("themeSelect");
+  if (themeSelect && themeSelect.value !== themeValue) {
+    themeSelect.value = themeValue;
+    onThemeChange();
+    updateMusicAestheticButtons(themeValue);
+  }
+
+  // Now select the raag/scale
+  const raagSelect = document.getElementById("raagSelect");
+  if (raagSelect) {
+    raagSelect.value = scaleValue;
+  }
+
+  // Highlight active sub-option
+  const parentPanel = document.querySelector(`.btn-music-option[data-value="${themeValue}"]`);
+  if (parentPanel) {
+    const subPanel = parentPanel.nextElementSibling;
+    if (subPanel && subPanel.classList.contains("music-sub-options")) {
+      subPanel.querySelectorAll(".btn-music-sub").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-scale") === scaleValue);
+      });
+    }
+  }
+
+  // Regenerate music with the new scale
+  autoRegenerateIfReady();
+}
+
+// Fullscreen playback controls
+function fsPlay() {
+  const audio = document.getElementById("audioPlayer");
+  if (audio && audio.src) {
+    audio.play().catch(e => console.log("Play blocked:", e));
+  }
+}
+
+function fsPause() {
+  const audio = document.getElementById("audioPlayer");
+  if (audio) {
+    audio.pause();
+  }
 }
