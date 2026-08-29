@@ -3,8 +3,9 @@ title: MrFold Music Studio
 emoji: 🎵
 colorFrom: indigo
 colorTo: pink
-sdk: docker
-app_port: 7860
+sdk: gradio
+sdk_version: 4.36.1
+app_file: app.py
 pinned: false
 ---
 
