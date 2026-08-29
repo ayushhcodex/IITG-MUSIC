@@ -9,6 +9,7 @@ STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 # Explicitly register endpoints for static assets on fastapi_app to override Gradio's SPA router
 @fastapi_app.get("/", response_class=HTMLResponse)
+@fastapi_app.get("/index.html", response_class=HTMLResponse)
 def read_root():
     with open(os.path.join(STATIC_DIR, "index.html"), "r") as f:
         return HTMLResponse(content=f.read(), status_code=200)
@@ -70,9 +71,10 @@ def custom_create_app(*args, **kwargs):
 
 gradio.routes.App.create_app = custom_create_app
 
-# 3. Create a minimal Gradio Blocks app to trigger the ZeroGPU validation
+# 3. Create a minimal Gradio Blocks app to trigger the ZeroGPU validation and redirect to our FastAPI app
 with gr.Blocks() as demo:
-    gr.Markdown("# MrFold Music Studio Helper")
+    gr.HTML("<script>window.location.href = window.location.pathname + 'index.html' + window.location.search;</script>")
+    gr.Markdown("# Redirecting to MrFold Music Studio...")
     btn = gr.Button("GPU Activator")
     btn.click(fn=dummy_gpu_fn)
 
