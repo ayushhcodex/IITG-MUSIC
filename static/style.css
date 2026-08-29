@@ -1521,3 +1521,100 @@ body.light-theme .fullscreen-loader-text {
   left: 1.25rem !important;
 }
 
+/* Fullscreen Search Box */
+.fs-search-box {
+  display: none; /* Hidden in normal mode */
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.75rem;
+}
+
+.fs-search-input {
+  width: 110px;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.fs-search-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+
+.fs-search-input::placeholder {
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+.fs-search-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fs-search-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Light Theme */
+body.light-theme .fs-search-input {
+  background: rgba(0, 0, 0, 0.04);
+  color: #000000;
+  border-color: #000000;
+}
+
+body.light-theme .fs-search-input:focus {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: #000000;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .fs-search-btn {
+  background: rgba(0, 0, 0, 0.04);
+  color: #000000;
+  border-color: #000000;
+}
+
+body.light-theme .fs-search-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Show search box only in fullscreen */
+#stageCard:fullscreen .fs-search-box {
+  display: flex !important;
+}
+#stageCard:-webkit-full-screen .fs-search-box {
+  display: flex !important;
+}
+#stageCard:-moz-full-screen .fs-search-box {
+  display: flex !important;
+}
+
+/* In fullscreen, align title group items horizontally */
+#stageCard:fullscreen .stage-title-group {
+  align-items: center;
+}
+#stageCard:-webkit-full-screen .stage-title-group {
+  align-items: center;
+}
+#stageCard:-moz-full-screen .stage-title-group {
+  align-items: center;
+}

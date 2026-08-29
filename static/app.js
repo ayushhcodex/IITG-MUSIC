@@ -566,6 +566,9 @@ async function fetchOnlineData(customId = null, autoPlay = false) {
       currentDataset = data.rows;
       currentPdbId   = data.pdb_id;
       currentBmrbId  = data.bmrb_id || "";   // store BMRB ID for folder naming
+      // Sync fullscreen search input
+      const fsInput = document.getElementById("fsSearchInput");
+      if (fsInput) fsInput.value = data.pdb_id || data.bmrb_id || "";
       
       updateLoadedStatus(data.title, data.rows.length, resolveUrl(data.csv_url), data.pdb_id);
       load3DStructure(data.pdb_id);
@@ -1291,4 +1294,15 @@ function fsTogglePlayPause() {
     audio.pause();
     if (btn) btn.textContent = "▶";
   }
+}
+
+// Fullscreen search — load protein without exiting fullscreen
+function fsLoadProtein() {
+  const input = document.getElementById("fsSearchInput");
+  const id = input ? input.value.trim() : "";
+  if (!id) return;
+  // Also sync the sidebar input
+  const sidebarInput = document.getElementById("fetchInput");
+  if (sidebarInput) sidebarInput.value = id;
+  fetchOnlineData(id, true);
 }
