@@ -1618,3 +1618,40 @@ body.light-theme .fs-search-btn:hover {
 #stageCard:-moz-full-screen .stage-title-group {
   align-items: center;
 }
+
+/* Center title (MrFold Music) */
+.fs-center-title {
+  display: none;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ffffff;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  letter-spacing: 0.5px;
+}
+
+body.light-theme .fs-center-title {
+  color: #000000;
+}
+
+#stageCard:fullscreen .stage-header {
+  position: relative;
+}
+#stageCard:-webkit-full-screen .stage-header {
+  position: relative;
+}
+#stageCard:-moz-full-screen .stage-header {
+  position: relative;
+}
+
+#stageCard:fullscreen .fs-center-title {
+  display: block;
+}
+#stageCard:-webkit-full-screen .fs-center-title {
+  display: block;
+}
+#stageCard:-moz-full-screen .fs-center-title {
+  display: block;
+}
