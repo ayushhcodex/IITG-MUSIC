@@ -23,8 +23,13 @@ except ImportError:
 # We do NOT use a catch-all Mount("/", ...) — that intercepts Gradio internals.
 _original_create_app = gradio.routes.App.create_app
 
-def _patched_create_app(*args, **kwargs):
-    """Wrap Gradio's create_app to inject our FastAPI sub-apps."""
+def _patched_create_app(cls, *args, **kwargs):
+    """Wrap Gradio's create_app to inject our FastAPI sub-apps.
+    cls is explicitly captured so it is NOT forwarded in *args to the original
+    bound method (which already has cls=App pre-bound). Without this, args[0]
+    would be App instead of the Blocks instance, causing blocks.get_config_file()
+    to fail with 'type object App has no attribute get_config_file'.
+    """
     gradio_asgi = _original_create_app(*args, **kwargs)
 
     try:
