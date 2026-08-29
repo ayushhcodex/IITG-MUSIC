@@ -26,28 +26,30 @@ def custom_create_app(*args, **kwargs):
     for idx, r in enumerate(app.routes):
         print(f"{idx:02d}: {getattr(r, 'path', 'No Path')} ({type(r).__name__})")
         
-    # Find the first catch-all or root route in Gradio's list (e.g. "/" or "/{path:path}")
+    # Find the EXACT root-level SPA catch-all in Gradio's route list.
+    # Deliberately avoid matching sub-path wildcards like /gradio_api/{api_name:path}
+    # or /run/{api_name} — those must remain handled by Gradio BEFORE our Mount.
+    # We only intercept Gradio's final root catch-all ("/" or "/{path:path}").
     target_idx = len(app.routes)
     for idx, route in enumerate(app.routes):
         path = getattr(route, "path", "")
-        # Only match the root route or catch-all route (avoid matching parameterized API routes like /run/{api_name})
-        if path == "/" or "path:path" in path:
+        # Match only the absolute root-level catch-all patterns
+        if path in ("/", "/{path:path}"):
             target_idx = idx
             break
-            
-    # Insert our FastAPI app as a fallback Mount right before the first wildcard/root route.
-    # This allows Gradio's explicit routes (e.g. startup events, assets) to match successfully,
-    # and redirects all general requests (including root /, /index.html, /api/..., /outputs/...)
-    # straight to our custom sonification studio backend.
+
+    # Insert our FastAPI app as a fallback Mount right before Gradio's root catch-all.
+    # Gradio's explicit routes (/gradio_api/*, /run/*, /upload, etc.) stay BEFORE our
+    # Mount and are matched first by Starlette. Our Mount only handles what falls through.
     from starlette.routing import Mount
     app.routes.insert(target_idx, Mount("/", fastapi_app, name="fastapi_fallback"))
-    
+
     print(f"FastAPI fallback successfully inserted at index {target_idx} of Gradio routing table.")
-    
+
     print("--- Injected Gradio Routes ---")
     for idx, r in enumerate(app.routes):
         print(f"{idx:02d}: {getattr(r, 'path', 'No Path')} ({type(r).__name__})")
-        
+
     return app
 
 gradio.routes.App.create_app = custom_create_app
@@ -57,18 +59,19 @@ with gr.Blocks() as demo:
     # Hidden button to satisfy Hugging Face ZeroGPU's check for a GPU-decorated function bound to an event
     btn = gr.Button("ZeroGPU Activator", visible=False)
     btn.click(fn=dummy_gpu_fn)
-    
+
     # Direct message in case the fallback Mount is bypassed (should not happen)
     gr.Markdown("# MrFold Music Studio is loading...")
 
+# 4. Launch — do NOT hardcode server_port or server_name.
+# Gradio 5 on HF Spaces uses SSR mode: Node proxy at :7860, Python at :7861.
+# Forcing server_port=7860 on the Python process conflicts with the Node proxy
+# and causes the /gradio_api/startup-events check to return 404.
+# Let HF Spaces / Gradio manage port binding via its own environment variables.
 if __name__ == "__main__":
-    # Hugging Face sets PORT environment variable, defaults to 7860 for Spaces
-    port = int(os.environ.get("PORT", 7860))
-    print(f"Launching Gradio app on port {port}...")
-    demo.launch(server_name="0.0.0.0", server_port=port)
+    print("Launching Gradio app (HF Spaces manages port via env)...")
+    demo.launch()
 else:
-    # Running as a module (HF Gradio runner imports this file).
-    # launch() must be called here so the Gradio runner can pick up the app.
-    port = int(os.environ.get("PORT", 7860))
-    print(f"[HF runner] Launching Gradio app on port {port}...")
-    demo.launch(server_name="0.0.0.0", server_port=port, prevent_thread_lock=True)
+    # HF Gradio runner imports app.py as a module — launch() must be called at module level.
+    print("[HF runner] Launching Gradio app (module-level import)...")
+    demo.launch(prevent_thread_lock=True)

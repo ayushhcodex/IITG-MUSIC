@@ -49,6 +49,16 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 # Mount outputs for downloading audio, MIDI, CSV
 app.mount("/outputs", StaticFiles(directory=OUTPUTS_DIR), name="outputs")
 
+# Passthrough for Gradio's internal startup check.
+# When running under HF Gradio SDK, our Mount("/", fastapi_app) inside Gradio's
+# router can intercept /gradio_api/startup-events before Gradio's own handler.
+# This endpoint ensures that request returns 200 rather than 404, so Gradio's
+# startup check passes successfully.
+@app.get("/gradio_api/startup-events")
+async def gradio_startup_events():
+    return {"is_running": True}
+
+
 def cleanup_old_runs(max_age_minutes: int = 15):
     """Automatically clean up files and folders in outputs/ older than max_age_minutes to save disk space."""
     import shutil
