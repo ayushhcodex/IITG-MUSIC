@@ -62,7 +62,7 @@ with gr.Blocks(title="MrFold Music Studio") as demo:
         </style>
         <iframe
           src="/gradio_api/custom/"
-          style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;"
+          style="width:100%; height:calc(100vh - 40px); border:none; display:block; margin:0; padding:0;"
           allow="autoplay"
           title="MrFold Music Studio"
         ></iframe>
@@ -93,7 +93,7 @@ body, html {
 }
 iframe {
   width: 100% !important;
-  height: 100vh !important;
+  height: calc(100vh - 40px) !important;
   border: none !important;
   display: block !important;
   margin: 0 !important;

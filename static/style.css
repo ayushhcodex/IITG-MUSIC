@@ -41,8 +41,8 @@ body {
 
 /* Header */
 .app-header {
-  height: 64px;
-  padding: 0 2rem;
+  height: 50px;
+  padding: 0 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -56,7 +56,7 @@ body {
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.6rem;
 }
 
 .logo-icon {
@@ -72,17 +72,17 @@ body {
 }
 
 .logo-text h1 {
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.4px;
   color: #ffffff;
 }
 
 .logo-text span {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
 }
 
 .header-actions {
