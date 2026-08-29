@@ -15,32 +15,50 @@ except ImportError:
     def dummy_gpu_fn():
         pass
 
-# 2. Monkey-patch Gradio's FastAPI application creator to mount our FastAPI app as a fallback Mount
+# 2. Monkey-patch Gradio's FastAPI application creator to inject our FastAPI app routes
 original_create_app = gradio.routes.App.create_app
 
 def custom_create_app(*args, **kwargs):
     app = original_create_app(*args, **kwargs)
     
-    # Mount our backend FastAPI app at the end of the routing table as a fallback.
-    # This ensures Gradio handles its own routes (e.g. startup checks, styling) first,
-    # and all other routes (like /index.html, /api/sonify, /outputs/...) fall through to our FastAPI app.
+    # Print routes for container log debugging
+    print("--- Original Gradio Routes ---")
+    for idx, r in enumerate(app.routes):
+        print(f"{idx:02d}: {getattr(r, 'path', 'No Path')} ({type(r).__name__})")
+        
+    # Find the first catch-all or root route in Gradio's list (e.g. "/" or "/{path:path}")
+    target_idx = len(app.routes)
+    for idx, route in enumerate(app.routes):
+        path = getattr(route, "path", "")
+        if "{" in path or path == "/":
+            target_idx = idx
+            break
+            
+    # Insert our FastAPI app as a fallback Mount right before the first wildcard route.
+    # This allows Gradio's explicit routes (e.g. startup events, assets) to match first,
+    # and redirects all general requests (including root /, /index.html, /api/..., /outputs/...)
+    # straight to our custom sonification studio backend.
     from starlette.routing import Mount
-    app.routes.append(Mount("/", fastapi_app, name="fastapi_fallback"))
+    app.routes.insert(target_idx, Mount("/", fastapi_app, name="fastapi_fallback"))
     
-    print("FastAPI fallback successfully mounted to Gradio App.")
+    print(f"FastAPI fallback successfully inserted at index {target_idx} of Gradio routing table.")
+    
+    print("--- Injected Gradio Routes ---")
+    for idx, r in enumerate(app.routes):
+        print(f"{idx:02d}: {getattr(r, 'path', 'No Path')} ({type(r).__name__})")
+        
     return app
 
 gradio.routes.App.create_app = custom_create_app
 
-# 3. Create a clean Gradio Blocks app that hosts our web studio inside a same-origin iframe
+# 3. Create a clean Gradio Blocks app to trigger the ZeroGPU validation
 with gr.Blocks() as demo:
     # Hidden button to satisfy Hugging Face ZeroGPU's check for a GPU-decorated function bound to an event
     btn = gr.Button("ZeroGPU Activator", visible=False)
     btn.click(fn=dummy_gpu_fn)
     
-    # Embed the FastAPI application directly in an iframe pointing to our mounted /index.html path.
-    # Because it is served from the same domain, it works seamlessly with zero CORS issues.
-    gr.HTML('<iframe src="/index.html" style="width:100%; height:950px; border:none; border-radius:8px;"></iframe>')
+    # Direct message in case the fallback Mount is bypassed (should not happen)
+    gr.Markdown("# MrFold Music Studio is loading...")
 
 if __name__ == "__main__":
     # Hugging Face sets PORT environment variable, defaults to 7860 for Spaces
