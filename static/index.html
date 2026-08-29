@@ -260,7 +260,7 @@
 
             <!-- Western Orchestral -->
             <button class="btn-music-option" data-value="Western Orchestral" onclick="selectMusicAesthetic('Western Orchestral')">Western Orchestral</button>
-            <div class="music-sub-options" id="subOptionsWestern" style="display: none;">
+            <div class="music-sub-options" id="subOptionsWestern">
               <button class="btn-music-sub" data-scale="Major" onclick="selectMusicScale('Western Orchestral','Major')">Major</button>
               <button class="btn-music-sub" data-scale="Natural Minor" onclick="selectMusicScale('Western Orchestral','Natural Minor')">Minor</button>
               <button class="btn-music-sub" data-scale="Dorian" onclick="selectMusicScale('Western Orchestral','Dorian')">Dorian</button>
@@ -271,7 +271,7 @@
 
             <!-- Ambient Electronic -->
             <button class="btn-music-option" data-value="Ambient Electronic" onclick="selectMusicAesthetic('Ambient Electronic')">Ambient Electronic</button>
-            <div class="music-sub-options" id="subOptionsAmbient" style="display: none;">
+            <div class="music-sub-options" id="subOptionsAmbient">
               <button class="btn-music-sub" data-scale="Major" onclick="selectMusicScale('Ambient Electronic','Major')">Major</button>
               <button class="btn-music-sub" data-scale="Natural Minor" onclick="selectMusicScale('Ambient Electronic','Natural Minor')">Minor</button>
               <button class="btn-music-sub" data-scale="Dorian" onclick="selectMusicScale('Ambient Electronic','Dorian')">Dorian</button>
@@ -279,10 +279,9 @@
               <button class="btn-music-sub" data-scale="Lydian" onclick="selectMusicScale('Ambient Electronic','Lydian')">Lydian</button>
             </div>
 
-            <!-- Play / Pause Controls -->
+            <!-- Play / Pause Toggle -->
             <div class="fullscreen-playback-controls">
-              <button class="btn-fs-playback" id="btnFsPlay" onclick="fsPlay()" title="Play">▶</button>
-              <button class="btn-fs-playback" id="btnFsPause" onclick="fsPause()" title="Pause">⏸</button>
+              <button class="btn-fs-playback" id="btnFsPlayPause" onclick="fsTogglePlayPause()" title="Play / Pause">▶</button>
             </div>
 
           </div>

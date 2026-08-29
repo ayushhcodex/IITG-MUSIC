@@ -1247,19 +1247,6 @@ function updateMusicAestheticButtons(themeValue) {
       btn.classList.remove("active");
     }
   });
-
-  // Show/hide sub-option panels
-  const panelMap = {
-    "Indian Classical": "subOptionsIndian",
-    "Western Orchestral": "subOptionsWestern",
-    "Ambient Electronic": "subOptionsAmbient"
-  };
-  Object.entries(panelMap).forEach(([key, id]) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.style.display = (key === themeValue) ? "flex" : "none";
-    }
-  });
 }
 
 function selectMusicScale(themeValue, scaleValue) {
@@ -1277,10 +1264,10 @@ function selectMusicScale(themeValue, scaleValue) {
     raagSelect.value = scaleValue;
   }
 
-  // Highlight active sub-option
-  const parentPanel = document.querySelector(`.btn-music-option[data-value="${themeValue}"]`);
-  if (parentPanel) {
-    const subPanel = parentPanel.nextElementSibling;
+  // Highlight active sub-option within that theme's panel
+  const parentBtn = document.querySelector(`.btn-music-option[data-value="${themeValue}"]`);
+  if (parentBtn) {
+    const subPanel = parentBtn.nextElementSibling;
     if (subPanel && subPanel.classList.contains("music-sub-options")) {
       subPanel.querySelectorAll(".btn-music-sub").forEach(btn => {
         btn.classList.toggle("active", btn.getAttribute("data-scale") === scaleValue);
@@ -1292,17 +1279,16 @@ function selectMusicScale(themeValue, scaleValue) {
   autoRegenerateIfReady();
 }
 
-// Fullscreen playback controls
-function fsPlay() {
+// Fullscreen playback toggle
+function fsTogglePlayPause() {
   const audio = document.getElementById("audioPlayer");
-  if (audio && audio.src) {
+  const btn = document.getElementById("btnFsPlayPause");
+  if (!audio) return;
+  if (audio.paused) {
     audio.play().catch(e => console.log("Play blocked:", e));
-  }
-}
-
-function fsPause() {
-  const audio = document.getElementById("audioPlayer");
-  if (audio) {
+    if (btn) btn.textContent = "⏸";
+  } else {
     audio.pause();
+    if (btn) btn.textContent = "▶";
   }
 }
