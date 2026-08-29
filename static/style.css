@@ -300,6 +300,7 @@ body {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -495,6 +496,7 @@ body {
   gap: 0.45rem;
   transition: all 0.25s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
 }
 
 .btn-spin-toggle:hover {
@@ -505,10 +507,10 @@ body {
 }
 
 .btn-spin-toggle.spinning-active {
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(0, 230, 118, 0.25));
-  border-color: #00e676;
-  color: #fff;
-  box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+  background: transparent;
+  border-color: var(--accent-border);
+  color: #ffffff;
+  box-shadow: none;
 }
 
 #structureStyleSelect {
@@ -1054,6 +1056,12 @@ body.light-theme .btn-spin-toggle:hover {
   background: rgba(0, 0, 0, 0.05) !important;
   border-color: #000000 !important;
 }
+body.light-theme .btn-spin-toggle.spinning-active {
+  background: transparent !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+}
 body.light-theme .stage-subtitle {
   color: #000000 !important;
   font-weight: 700 !important;
@@ -1073,6 +1081,9 @@ body.light-theme .badge-scientific {
   color: #000000;
   border: none !important;
   background: transparent !important;
+}
+body.light-theme .strip-title {
+  color: #000000;
 }
 
 /* ============================================================
