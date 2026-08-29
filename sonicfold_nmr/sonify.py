@@ -424,8 +424,8 @@ def sonify_bmrb(
             
         sf2_path = os.path.join(base_dir, "TimGM6mb.sf2")
         
-        if not os.path.exists(sf2_path):
-            print("Downloading SoundFont...")
+        if not os.path.exists(sf2_path) or os.path.getsize(sf2_path) < 100000:
+            print("SoundFont not found or invalid (LFS placeholder). Downloading TimGM6mb.sf2...")
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
