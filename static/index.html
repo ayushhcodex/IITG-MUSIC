@@ -32,11 +32,6 @@
     <!-- Left Column: Compact Studio Controls -->
     <section class="left-studio">
       
-      <!-- Theme Toggle -->
-      <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.15rem; margin-bottom: 0.85rem;">
-        <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">UI Theme</span>
-        <button id="themeToggleBtn" onclick="toggleTheme()" class="btn-outline btn-compact" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; border-radius: 999px;">Light Mode</button>
-      </div>
 
       <!-- Input Mode Panel -->
       <div class="glass-panel">
@@ -218,7 +213,7 @@
             <span class="stage-subtitle" id="molSubtitle">BioNMR IITG</span>
           </div>
           <div class="stage-header-actions">
-            <select id="structureStyleSelect" class="select-input" onchange="changeStructureStyle(this.value)" style="width: auto; padding: 0.38rem 0.95rem; height: auto; border-radius: 999px; font-size: 0.82rem; background: rgba(20, 25, 42, 0.85); border: 1px solid rgba(0, 242, 254, 0.35); color: var(--accent-cyan); cursor: pointer;">
+            <select id="structureStyleSelect" class="select-input" onchange="changeStructureStyle(this.value)" style="width: auto; padding: 0.38rem 0.95rem; height: auto; border-radius: 999px; font-size: 0.82rem; cursor: pointer;">
               <option value="cartoon">Cartoon (PyMOL Style)</option>
               <option value="surface">Surface (Chimera Style)</option>
               <option value="stick">Stick</option>
@@ -228,6 +223,7 @@
             <button class="btn-spin-toggle" id="btnToggleSpin" onclick="toggleStructureRotation()" title="Toggle Continuous Clockwise 3D Molecular Rotation">
               <span>🔄 3D Motion: OFF</span>
             </button>
+            <button id="themeToggleBtn" onclick="toggleTheme()" class="btn-outline btn-compact" style="padding: 0.38rem 0.95rem; font-size: 0.82rem; border-radius: 999px; width: auto; height: auto; margin-left: 0.25rem;">Light Mode</button>
           </div>
         </div>
 
@@ -270,7 +266,6 @@
 
             <!-- Export Actions -->
             <div class="dock-exports">
-              <button class="btn-export-mini" id="btnRecordVideo" onclick="startVideoRecording()" title="Record 3D Viewer & Audio" style="background: rgba(255,50,50,0.2); border-color: rgba(255,50,50,0.5); color: #ff8888; cursor: pointer;">🔴 REC</button>
               <div class="export-actions">
                 <a class="btn-export-mini" id="linkDownloadWav" download="protein_sonification.wav" title="Download WAV Audio">🎵 WAV</a>
                 <a class="btn-export-mini" id="linkDownloadMid" download="protein_sonification.mid" title="Download MIDI File">🎹 MIDI</a>

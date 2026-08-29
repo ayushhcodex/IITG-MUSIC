@@ -17,6 +17,7 @@
   --helix-color: #00f2fe;
   --sheet-color: #f857a6;
   --coil-color: #f9d423;
+  --accent-border: #ffffff;
 }
 
 * {
@@ -95,7 +96,7 @@ body {
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
   background: rgba(0, 242, 254, 0.1);
-  border: 1px solid rgba(0, 242, 254, 0.28);
+  border: 1px solid var(--accent-border);
   color: #ffffff;
   font-size: 0.78rem;
   font-weight: 600;
@@ -253,7 +254,7 @@ body {
 
 .input-text:focus, .select-input:focus {
   outline: none;
-  border-color: var(--accent-cyan);
+  border-color: var(--accent-border);
   box-shadow: 0 0 10px rgba(0, 242, 254, 0.22);
 }
 
@@ -291,7 +292,7 @@ body {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 10px;
-  border: 1px solid var(--accent-cyan);
+  border: 1px solid var(--accent-border);
   background: transparent;
   color: #ffffff;
   font-family: inherit;
@@ -371,7 +372,7 @@ body {
 }
 
 .preset-card:hover {
-  border-color: var(--accent-cyan);
+  border-color: var(--accent-border);
   background: rgba(22, 28, 48, 0.85);
   transform: translateX(3px);
 }
@@ -393,7 +394,7 @@ body {
   padding: 0.6rem 0.8rem;
   border-radius: 9px;
   background: rgba(0, 242, 254, 0.08);
-  border: 1px solid rgba(0, 242, 254, 0.25);
+  border: 1px solid var(--accent-border);
 }
 
 .loaded-title {
@@ -483,7 +484,7 @@ body {
   padding: 0.38rem 0.95rem;
   border-radius: 999px;
   background: rgba(20, 25, 42, 0.85);
-  border: 1px solid rgba(0, 242, 254, 0.35);
+  border: 1px solid var(--accent-border);
   color: #ffffff;
   font-family: inherit;
   font-size: 0.82rem;
@@ -499,7 +500,7 @@ body {
 .btn-spin-toggle:hover {
   transform: translateY(-1px);
   background: rgba(0, 242, 254, 0.15);
-  border-color: var(--accent-cyan);
+  border-color: var(--accent-border);
   box-shadow: 0 0 16px rgba(0, 242, 254, 0.45);
 }
 
@@ -508,6 +509,12 @@ body {
   border-color: #00e676;
   color: #fff;
   box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+}
+
+#structureStyleSelect {
+  border: 1px solid var(--accent-border) !important;
+  color: #ffffff !important;
+  background: rgba(20, 25, 42, 0.85) !important;
 }
 
 .mol-legend {
@@ -579,7 +586,7 @@ body {
   font-weight: 600;
   color: #ffffff;
   background: rgba(7, 8, 13, 0.82);
-  border: 1px solid rgba(0, 242, 254, 0.35);
+  border: 1px solid var(--accent-border);
   padding: 0.45rem 0.9rem;
   border-radius: 9px;
   backdrop-filter: blur(8px);
@@ -629,7 +636,7 @@ body {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: 2.5px solid var(--accent-cyan);
+  border: 2.5px solid var(--accent-border);
   opacity: 0;
   transition: border-color 0.2s ease;
   pointer-events: none;
@@ -932,6 +939,7 @@ body.light-theme {
   --accent-cyan: #0088aa;
   --accent-blue: #0066cc;
   --accent-magenta: #cc0066;
+  --accent-border: #000000;
   background: radial-gradient(circle at 15% 15%, #e2e8f0 0%, #f0f4f8 60%),
               radial-gradient(circle at 85% 85%, #edf2f7 0%, #f0f4f8 60%);
   color: var(--text-main);
@@ -1030,12 +1038,26 @@ body.light-theme .btn-primary {
   color: #ffffff;
 }
 body.light-theme .btn-outline {
-  border-color: #00838f;
-  color: #00838f;
-  background: transparent;
+  border-color: #000000 !important;
+  color: #000000 !important;
+  background: transparent !important;
 }
 body.light-theme .btn-outline:hover {
-  background: rgba(0, 131, 143, 0.06);
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+body.light-theme .btn-spin-toggle {
+  border-color: #000000 !important;
+  color: #000000 !important;
+  background: transparent !important;
+}
+body.light-theme .btn-spin-toggle:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: #000000 !important;
+}
+body.light-theme .stage-subtitle {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
 }
 body.light-theme .logo-text h1 {
   background: linear-gradient(to right, #1a1f35, #0066cc);
@@ -1044,8 +1066,8 @@ body.light-theme .logo-text h1 {
 }
 body.light-theme #structureStyleSelect {
   background: rgba(255, 255, 255, 0.9) !important;
-  color: #0066cc !important;
-  border-color: rgba(0, 136, 170, 0.4) !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
 }
 body.light-theme .badge-scientific {
   color: #000000;
@@ -1066,7 +1088,7 @@ body.light-theme .badge-scientific {
   height: 42px;
   border-radius: 50%;
   background: rgba(7, 8, 13, 0.82);
-  border: 1px solid rgba(0, 242, 254, 0.35);
+  border: 1px solid var(--accent-border);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -1079,7 +1101,7 @@ body.light-theme .badge-scientific {
 
 .btn-fullscreen-toggle:hover {
   background: rgba(0, 242, 254, 0.15);
-  border-color: var(--accent-cyan);
+  border-color: var(--accent-border);
   transform: scale(1.1);
   color: #fff;
   box-shadow: 0 0 12px rgba(0, 242, 254, 0.5);
