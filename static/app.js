@@ -1178,11 +1178,11 @@ function toggleTheme() {
   const isLight = document.body.classList.contains('light-theme');
   
   if (isLight) {
-    themeBtn.innerHTML = '🌙 Dark Mode';
+    themeBtn.innerHTML = 'Dark Mode';
     localStorage.setItem('theme', 'light');
     if (viewer) { viewer.setBackgroundColor("#e2e8f0"); viewer.render(); }
   } else {
-    themeBtn.innerHTML = '☀️ Light Mode';
+    themeBtn.innerHTML = 'Light Mode';
     localStorage.setItem('theme', 'dark');
     if (viewer) { viewer.setBackgroundColor("#090a12"); viewer.render(); }
   }
@@ -1193,6 +1193,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (localStorage.getItem('theme') === 'light') {
     document.body.classList.add('light-theme');
     const themeBtn = document.getElementById('themeToggleBtn');
-    if (themeBtn) themeBtn.innerHTML = '🌙 Dark Mode';
+    if (themeBtn) themeBtn.innerHTML = 'Dark Mode';
   }
 });

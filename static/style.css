@@ -1047,6 +1047,11 @@ body.light-theme #structureStyleSelect {
   color: #0066cc !important;
   border-color: rgba(0, 136, 170, 0.4) !important;
 }
+body.light-theme .badge-scientific {
+  color: #000000;
+  border: none !important;
+  background: transparent !important;
+}
 
 /* ============================================================
    📺 FULLSCREEN VISUALIZATION SCREEN MODE
