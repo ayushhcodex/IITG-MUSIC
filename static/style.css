@@ -96,7 +96,7 @@ body {
   border-radius: 999px;
   background: rgba(0, 242, 254, 0.1);
   border: 1px solid rgba(0, 242, 254, 0.28);
-  color: var(--accent-cyan);
+  color: #ffffff;
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.4px;
@@ -293,7 +293,7 @@ body {
   border-radius: 10px;
   border: 1px solid var(--accent-cyan);
   background: transparent;
-  color: var(--accent-cyan);
+  color: #ffffff;
   font-family: inherit;
   font-size: 0.88rem;
   font-weight: 700;
@@ -397,7 +397,7 @@ body {
 }
 
 .loaded-title {
-  color: var(--accent-cyan);
+  color: #ffffff;
   font-size: 0.82rem;
 }
 
@@ -469,7 +469,7 @@ body {
 
 .stage-subtitle {
   font-size: 0.78rem;
-  color: var(--accent-cyan);
+  color: #ffffff;
   font-weight: 500;
 }
 
@@ -484,7 +484,7 @@ body {
   border-radius: 999px;
   background: rgba(20, 25, 42, 0.85);
   border: 1px solid rgba(0, 242, 254, 0.35);
-  color: var(--accent-cyan);
+  color: #ffffff;
   font-family: inherit;
   font-size: 0.82rem;
   font-weight: 600;
@@ -577,7 +577,7 @@ body {
   font-family: 'Fira Code', monospace;
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--accent-cyan);
+  color: #ffffff;
   background: rgba(7, 8, 13, 0.82);
   border: 1px solid rgba(0, 242, 254, 0.35);
   padding: 0.45rem 0.9rem;
@@ -612,7 +612,7 @@ body {
 
 .floating-note {
   font-size: 2.8rem;
-  color: var(--accent-cyan);
+  color: #ffffff;
   text-shadow: 0 0 18px var(--accent-cyan), 0 0 36px var(--accent-cyan);
   position: absolute;
   animation: noteFloat 1.8s ease-in-out infinite;
@@ -667,7 +667,7 @@ body {
 
 .ribbon-note-pointer {
   font-size: 1.15rem;
-  color: var(--accent-cyan);
+  color: #ffffff;
   text-shadow: 0 0 10px var(--accent-cyan);
   position: absolute;
   top: -1.4rem;
@@ -806,7 +806,7 @@ body {
 .strip-title {
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--accent-cyan);
+  color: #ffffff;
   letter-spacing: 0.6px;
 }
 
@@ -1062,7 +1062,7 @@ body.light-theme #structureStyleSelect {
   border-radius: 50%;
   background: rgba(7, 8, 13, 0.82);
   border: 1px solid rgba(0, 242, 254, 0.35);
-  color: var(--accent-cyan);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
