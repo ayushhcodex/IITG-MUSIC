@@ -8,25 +8,31 @@ from fastapi.responses import HTMLResponse, FileResponse
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 # Explicitly register endpoints for static assets on fastapi_app to override Gradio's SPA router
+# We register them both under the root (for local run) and under /api/ (to bypass Gradio's middleware on Hugging Face)
 @fastapi_app.get("/", response_class=HTMLResponse)
 @fastapi_app.get("/index.html", response_class=HTMLResponse)
+@fastapi_app.get("/api/index.html", response_class=HTMLResponse)
 def read_root():
     with open(os.path.join(STATIC_DIR, "index.html"), "r") as f:
         return HTMLResponse(content=f.read(), status_code=200)
 
 @fastapi_app.get("/app.js")
+@fastapi_app.get("/api/app.js")
 def read_app_js():
     return FileResponse(os.path.join(STATIC_DIR, "app.js"))
 
 @fastapi_app.get("/style.css")
+@fastapi_app.get("/api/style.css")
 def read_style_css():
     return FileResponse(os.path.join(STATIC_DIR, "style.css"))
 
 @fastapi_app.get("/icon.png")
+@fastapi_app.get("/api/icon.png")
 def read_icon_png():
     return FileResponse(os.path.join(STATIC_DIR, "icon.png"))
 
 @fastapi_app.get("/favicon.ico")
+@fastapi_app.get("/api/favicon.ico")
 def read_favicon():
     return FileResponse(os.path.join(STATIC_DIR, "icon.png"))
 
@@ -73,7 +79,7 @@ gradio.routes.App.create_app = custom_create_app
 
 js_redirect = """
 function() {
-    window.location.href = window.location.origin + "/index.html" + window.location.search;
+    window.location.href = window.location.origin + "/api/index.html" + window.location.search;
 }
 """
 
