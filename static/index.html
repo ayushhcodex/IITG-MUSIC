@@ -245,6 +245,20 @@
             </div>
           </div>
 
+          <!-- Music style option panel (Only visible on the left side in fullscreen mode) -->
+          <div class="music-theme-options-vertical" id="musicThemeOptionsVertical">
+            <div class="music-theme-title">Aesthetic Style</div>
+            <button class="btn-music-option active" data-value="Indian Classical" onclick="selectMusicAesthetic('Indian Classical')">Indian Classical</button>
+            <button class="btn-music-option" data-value="Western Orchestral" onclick="selectMusicAesthetic('Western Orchestral')">Western Orchestral</button>
+            <button class="btn-music-option" data-value="Ambient Electronic" onclick="selectMusicAesthetic('Ambient Electronic')">Ambient Electronic</button>
+          </div>
+
+          <!-- Fullscreen Audio Loader Overlay -->
+          <div class="fullscreen-audio-loader" id="fullscreenAudioLoader" style="display: none;">
+            <div class="fullscreen-loader-spinner"></div>
+            <span class="fullscreen-loader-text">Rendering Audio Composition...</span>
+          </div>
+
           <!-- Fullscreen Button (YouTube Style) -->
           <button class="btn-fullscreen-toggle" id="btnFullscreenToggle" onclick="toggleCanvasFullscreen()" title="Toggle Fullscreen View (Press ESC to exit)">
             <svg class="fullscreen-icon" viewBox="0 0 24 24" width="20" height="20">

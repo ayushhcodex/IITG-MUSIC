@@ -1295,3 +1295,154 @@ body.light-theme .btn-style-option.active {
   display: flex !important;
 }
 
+/* Music theme options vertical panel */
+.music-theme-options-vertical {
+  display: none; /* Hidden by default in normal mode */
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 100;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(7, 8, 13, 0.85);
+  border: 1px solid var(--accent-border);
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  width: 175px;
+}
+
+.music-theme-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 0.15rem;
+}
+
+.btn-music-option {
+  padding: 0.38rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(20, 25, 42, 0.85);
+  border: 1px solid var(--accent-border);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.btn-music-option:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+}
+
+.btn-music-option.active {
+  background: #ffffff;
+  color: #07080d;
+  border-color: #ffffff;
+}
+
+/* Light Theme Overrides for Music Options */
+body.light-theme .music-theme-title {
+  color: #4a5568;
+}
+
+body.light-theme .btn-music-option {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000000;
+  border-color: #000000;
+}
+
+body.light-theme .btn-music-option:hover {
+  color: #000000;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .btn-music-option.active {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+/* Loader Styles */
+.fullscreen-audio-loader {
+  display: none; /* Hidden by default */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(7, 8, 13, 0.85);
+  z-index: 150;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  backdrop-filter: blur(4px);
+  border-radius: inherit;
+}
+
+body.light-theme .fullscreen-audio-loader {
+  background: rgba(240, 244, 248, 0.85);
+}
+
+.fullscreen-loader-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--accent-border);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: fullscreenSpin 1s linear infinite;
+}
+
+.fullscreen-loader-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+body.light-theme .fullscreen-loader-text {
+  color: #000000;
+}
+
+@keyframes fullscreenSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Fullscreen Show/Hide behaviors */
+#stageCard:fullscreen .music-theme-options-vertical {
+  display: flex !important;
+}
+
+#stageCard:fullscreen .live-hud-overlay {
+  top: auto !important;
+  bottom: 1.25rem !important;
+  left: 1.25rem !important;
+}
+
+/* Vendor Prefixes */
+#stageCard:-webkit-full-screen .music-theme-options-vertical {
+  display: flex !important;
+}
+#stageCard:-webkit-full-screen .live-hud-overlay {
+  top: auto !important;
+  bottom: 1.25rem !important;
+  left: 1.25rem !important;
+}
+
+#stageCard:-moz-full-screen .music-theme-options-vertical {
+  display: flex !important;
+}
+#stageCard:-moz-full-screen .live-hud-overlay {
+  top: auto !important;
+  bottom: 1.25rem !important;
+  left: 1.25rem !important;
+}
+

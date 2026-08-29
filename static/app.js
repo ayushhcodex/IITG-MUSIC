@@ -697,6 +697,7 @@ const THEME_SCALES = {
 
 function onThemeChange() {
   const theme = document.getElementById("themeSelect").value;
+  updateMusicAestheticButtons(theme);
   const raagSelect = document.getElementById("raagSelect");
   const scaleLabel = document.getElementById("scaleLabel");
   const instrumentCustomizationRow = document.getElementById("instrumentCustomizationRow");
@@ -750,6 +751,13 @@ async function generateMusic(autoPlay = false) {
   
   isGenerating = true;
   pendingGenerate = false;
+
+  // Show fullscreen loader if in fullscreen mode
+  const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+  if (isFullscreen) {
+    const loader = document.getElementById("fullscreenAudioLoader");
+    if (loader) loader.style.display = "flex";
+  }
 
   // Snapshot the dataset & PDB at the moment we start generating
   // so even if the user loads another protein mid-flight we re-run correctly.
@@ -830,6 +838,8 @@ async function generateMusic(autoPlay = false) {
   } catch (err) {
     console.error("Error rendering composition:", err);
   } finally {
+    const loader = document.getElementById("fullscreenAudioLoader");
+    if (loader) loader.style.display = "none";
     const btn = document.getElementById("btnGenerate");
     btn.innerHTML = origText;
     btn.disabled = false;
@@ -1216,3 +1226,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (themeBtn) themeBtn.innerHTML = 'Dark Mode';
   }
 });
+
+function selectMusicAesthetic(themeValue) {
+  const themeSelect = document.getElementById("themeSelect");
+  if (themeSelect) {
+    themeSelect.value = themeValue;
+  }
+  onThemeChange();
+  
+  // Highlight active button immediately
+  updateMusicAestheticButtons(themeValue);
+}
+
+function updateMusicAestheticButtons(themeValue) {
+  const buttons = document.querySelectorAll(".btn-music-option");
+  buttons.forEach(btn => {
+    if (btn.getAttribute("data-value") === themeValue) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+}
