@@ -21,11 +21,26 @@ original_create_app = gradio.routes.App.create_app
 def custom_create_app(*args, **kwargs):
     app = original_create_app(*args, **kwargs)
     
-    # Prepend our FastAPI routes so they handle requests first (on / and /api)
+    api_routes = []
+    static_route = None
+    
     for route in fastapi_app.routes:
+        # Identify the catch-all static files mount on /
+        if hasattr(route, "name") and route.name == "static":
+            static_route = route
+        else:
+            api_routes.append(route)
+            
+    # Prepend API and output routes so they take precedence over Gradio
+    for route in api_routes:
         app.routes.insert(0, route)
         
-    print("FastAPI routes successfully injected into Gradio app.")
+    # Append the static catch-all mount to the very end so it acts as a fallback,
+    # ensuring Gradio's internal routes (like /gradio_api/startup-events) match first.
+    if static_route:
+        app.routes.append(static_route)
+        
+    print("FastAPI routes successfully injected into Gradio app with prioritized fallback routing.")
     return app
 
 gradio.routes.App.create_app = custom_create_app
