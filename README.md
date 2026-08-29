@@ -6,6 +6,7 @@ colorTo: pink
 sdk: gradio
 app_file: app.py
 pinned: false
+fullWidth: true
 ---
 
 # MrFold Music Studio - Molecular Sonification
