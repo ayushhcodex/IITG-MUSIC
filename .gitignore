@@ -21,10 +21,18 @@ venv/
 CHEMICAL SHIFT PART 1/
 *copy.csv
 
-# Generated Audio & Caches
+# Generated Audio, Video & Caches
 outputs/
 batch_music_outputs/
 downloaded_pdb_csvs/
 sonify_input_csvs/
 music_output.*
+*.mp4
+*.wav
 all_backbone_final_freq.csv
+scratch/
+
+# Markdown documentation files (except README.md for HF Space fullWidth frontmatter)
+*.md
+**/*.md
+!README.md

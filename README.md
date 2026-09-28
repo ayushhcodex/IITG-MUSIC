@@ -13,7 +13,15 @@ fullWidth: true
 
 MrFold Music Studio is a web and desktop tool that translates protein secondary structure and chemical shift data (BMRB / PDB) into Indian Classical Music (Ragas). 
 
-It dynamically maps chemical shift frequencies to notes in different classical Ragas (such as Yaman, Bhairav, Bhupali, Kafi, and Malkauns) and synthesizes multi-track MIDI files into high-quality audio stems using **FluidSynth** and the **TimGM6mb SoundFont**.
+It dynamically maps chemical shift frequencies to notes in different classical Ragas (such as Yaman, Bhairav, Bhupali, Kafi, Malkauns, and Khamaaz) and synthesizes multi-track MIDI files into high-quality audio stems using **FluidSynth** and the **TimGM6mb SoundFont**.
+
+---
+
+## Latest Updates
+- Added fullscreen mode with a centered MrFold Music title and dynamic style controls.
+- Redesigned the fullscreen music panel with expandable sub-options per theme and a combined play/pause toggle.
+- Integrated PDB/BMRB search input next to the BioNMR IITG title in fullscreen mode.
+- Improved 3D motion button styles and reorganized theme toggles.
 
 ---
 

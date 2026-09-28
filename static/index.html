@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MrFold Music — Molecular Sonification Studio</title>
   <link rel="icon" type="image/png" href="icon.png" />
-  <link rel="stylesheet" href="style.css?v=5" />
-  <!-- 3Dmol.js WebGL Library -->
-  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+  <link rel="stylesheet" href="style.css?v=6" />
+  <!-- 3Dmol.js WebGL Library (Offline Local Copy) -->
+  <script src="3Dmol-min.js?v=1"></script>
 </head>
-<body>
+<body class="canvas-fullscreen-active">
 
   <!-- Header -->
   <header class="app-header">
@@ -97,7 +97,7 @@
 
       <!-- Customization Studio Panel -->
       <div class="glass-panel">
-        <h2 class="panel-title">2. Raga Customization Studio</h2>
+        <h2 class="panel-title">2. Music Generation Studio</h2>
 
         <div class="grid-2">
           <div class="form-group">
@@ -218,7 +218,9 @@
               <input type="text" id="fsSearchInput" class="fs-search-input" placeholder="PDB / BMRB" value="1DMB" onkeydown="if(event.key==='Enter')fsLoadProtein()" />
               <button class="fs-search-btn" onclick="fsLoadProtein()" title="Load">→</button>
             </div>
-            <div class="fs-center-title">MrFold Music</div>
+            <div class="fs-center-title">
+              <img src="mrfold-music-gold.png" alt="MrFold Music" class="fs-gold-title-img" />
+            </div>
           </div>
           
           <div class="stage-header-actions">
@@ -265,6 +267,7 @@
               <button class="btn-music-sub" data-scale="Bhupali" onclick="selectMusicScale('Indian Classical','Bhupali')">Bhupali</button>
               <button class="btn-music-sub" data-scale="Kafi" onclick="selectMusicScale('Indian Classical','Kafi')">Kafi</button>
               <button class="btn-music-sub" data-scale="Malkauns" onclick="selectMusicScale('Indian Classical','Malkauns')">Malkauns</button>
+              <button class="btn-music-sub" data-scale="Khamaaz" onclick="selectMusicScale('Indian Classical','Khamaaz')">Khamaaz</button>
             </div>
 
             <!-- Western Orchestral -->
@@ -297,8 +300,15 @@
 
           <!-- Fullscreen Audio Loader Overlay -->
           <div class="fullscreen-audio-loader" id="fullscreenAudioLoader" style="display: none;">
-            <div class="fullscreen-loader-spinner"></div>
-            <span class="fullscreen-loader-text">Rendering Audio Composition...</span>
+            <div class="audio-visualizer-loader">
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+            </div>
           </div>
 
           <!-- Fullscreen Button (YouTube Style) -->
@@ -358,6 +368,6 @@
 
   </main>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

@@ -267,8 +267,14 @@ function toggleRecordingMode() {
 
 function setupKeyboardShortcuts() {
   window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && document.body.classList.contains("recording-mode")) {
-      toggleRecordingMode();
+    // Avoid triggering shortcuts when user is typing in search or input fields
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA")) {
+      return;
+    }
+    if (e.key === "Escape") {
+      if (document.body.classList.contains("recording-mode")) {
+        toggleRecordingMode();
+      }
     }
   });
 
@@ -278,66 +284,21 @@ function setupKeyboardShortcuts() {
       viewer.render();
     }
   });
-
-  // Handle Fullscreen state change events
-  const onFullscreenChange = () => {
-    const isFullscreen = !!(
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.mozFullScreenElement ||
-      document.msFullscreenElement
-    );
-
-    if (isFullscreen) {
-      document.body.classList.add("canvas-fullscreen-active");
-    } else {
-      document.body.classList.remove("canvas-fullscreen-active");
-    }
-
-    // Force viewer resize & render
-    setTimeout(() => {
-      if (viewer) {
-        viewer.resize();
-        viewer.render();
-      }
-    }, 100);
-  };
-
-  document.addEventListener("fullscreenchange", onFullscreenChange);
-  document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-  document.addEventListener("mozfullscreenchange", onFullscreenChange);
-  document.addEventListener("MSFullscreenChange", onFullscreenChange);
+}
+  // Fullscreen state is now managed entirely via CSS toggle instead of Native Fullscreen API
 }
 
-// Toggle Fullscreen on Molecular Canvas (YouTube style)
+// Toggle Fullscreen on Molecular Canvas (In-browser Pseudo-Fullscreen)
 function toggleCanvasFullscreen() {
-  const container = document.getElementById("stageCard");
-  if (!container) return;
-
-  if (!document.fullscreenElement &&
-      !document.mozFullScreenElement && 
-      !document.webkitFullscreenElement && 
-      !document.msFullscreenElement) {
-    if (container.requestFullscreen) {
-      container.requestFullscreen();
-    } else if (container.msRequestFullscreen) {
-      container.msRequestFullscreen();
-    } else if (container.mozRequestFullScreen) {
-      container.mozRequestFullScreen();
-    } else if (container.webkitRequestFullscreen) {
-      container.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+  document.body.classList.toggle("canvas-fullscreen-active");
+  
+  // Force viewer resize & render after layout reflow
+  setTimeout(() => {
+    if (viewer) {
+      viewer.resize();
+      viewer.render();
     }
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.msExitFullscreen) {
-      document.msExitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-      document.mozCancelFullScreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
-  }
+  }, 100);
 }
 
 
@@ -674,7 +635,8 @@ const THEME_SCALES = {
     { value: "Bhairav", label: "Bhairav (Majestic Morning)" },
     { value: "Bhupali", label: "Bhupali (Joyful Pentatonic)" },
     { value: "Kafi", label: "Kafi (Expressive Dynamic)" },
-    { value: "Malkauns", label: "Malkauns (Deep Meditative)" }
+    { value: "Malkauns", label: "Malkauns (Deep Meditative)" },
+    { value: "Khamaaz", label: "Khamaaz (Light Classical / Romantic)" }
   ],
   "Western Orchestral": [
     { value: "Major", label: "Major / Ionian (Happy & Bright)" },
@@ -755,12 +717,8 @@ async function generateMusic(autoPlay = false) {
   isGenerating = true;
   pendingGenerate = false;
 
-  // Show fullscreen loader if in fullscreen mode
-  const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
-  if (isFullscreen) {
-    const loader = document.getElementById("fullscreenAudioLoader");
-    if (loader) loader.style.display = "flex";
-  }
+  const loader = document.getElementById("fullscreenAudioLoader");
+  if (loader) loader.style.display = "flex";
 
   // Snapshot the dataset & PDB at the moment we start generating
   // so even if the user loads another protein mid-flight we re-run correctly.
@@ -770,7 +728,7 @@ async function generateMusic(autoPlay = false) {
 
   const btn = document.getElementById("btnGenerate");
   const origText = btn.innerHTML;
-  btn.innerHTML = "<span>⏳ Rendering Audio...</span>";
+  btn.innerHTML = "<span>⏳ Processing...</span>";
   btn.disabled = true;
 
   // Also disable the regenerate button if present
@@ -1306,3 +1264,8 @@ function fsLoadProtein() {
   if (sidebarInput) sidebarInput.value = id;
   fetchOnlineData(id, true);
 }
+
+
+
+
+

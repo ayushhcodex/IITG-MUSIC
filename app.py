@@ -49,7 +49,7 @@ gradio.routes.App.create_app = classmethod(_patched_create_app)
 # The iframe src="/gradio_api/custom/" loads our FastAPI app's static/index.html.
 # All fetch() calls in app.js use relative paths prefixed by API_PREFIX (/gradio_api/custom),
 # ensuring they go through the Node proxy and hit the custom mount.
-with gr.Blocks(title="MrFold Music Studio") as demo:
+with gr.Blocks(title="MrFold Music Studio", fill_width=True, fill_height=True) as demo:
     # Hidden ZeroGPU activator — required by HF ZeroGPU validation
     _btn = gr.Button("ZeroGPU Activator", visible=False)
     _btn.click(fn=dummy_gpu_fn)
@@ -57,12 +57,31 @@ with gr.Blocks(title="MrFold Music Studio") as demo:
     gr.HTML(
         """
         <style>
-          .gradio-container { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
-          footer { display: none !important; }
+          html, body, .gradio-container, .main, .contain, #root, gradio-app {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: #07080d !important;
+            overflow: hidden !important;
+          }
+          footer, header, nav { display: none !important; }
+          iframe {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            z-index: 999999 !important;
+          }
         </style>
         <iframe
           src="/gradio_api/custom/"
-          style="width:100%; height:calc(100vh - 40px); border:none; display:block; margin:0; padding:0;"
+          style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; margin: 0; padding: 0; z-index: 999999;"
           allow="autoplay"
           title="MrFold Music Studio"
         ></iframe>
@@ -75,9 +94,12 @@ body, html {
   padding: 0 !important;
   overflow: hidden !important;
   background-color: #07080d !important;
+  width: 100vw !important;
+  height: 100vh !important;
 }
-.gradio-container {
+.gradio-container, .gradio-container > .main, .gradio-container .contain, div.gradio-container {
   max-width: 100% !important;
+  width: 100vw !important;
   margin: 0 !important;
   padding: 0 !important;
   height: 100vh !important;
@@ -86,18 +108,16 @@ body, html {
   box-shadow: none !important;
   background: #07080d !important;
 }
-#mrfold-wrapper {
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: 100% !important;
-}
 iframe {
-  width: 100% !important;
-  height: calc(100vh - 40px) !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
   border: none !important;
-  display: block !important;
   margin: 0 !important;
   padding: 0 !important;
+  z-index: 999999 !important;
 }
 """
 

@@ -31,6 +31,14 @@ RAAG_SCALES = {
         "intervals": [0, 3, 5, 8, 10],
         "names": ["Sa", "ga", "Ma", "dha", "ni"]
     },
+    "Khamaaz": {
+        "intervals": [0, 2, 4, 5, 7, 9, 10, 11],
+        "names": ["Sa", "Re", "Ga", "Ma", "Pa", "Dha", "ni", "Ni"]
+    },
+    "Khamaj": {
+        "intervals": [0, 2, 4, 5, 7, 9, 10, 11],
+        "names": ["Sa", "Re", "Ga", "Ma", "Pa", "Dha", "ni", "Ni"]
+    },
     # Western Classical / Modes
     "Major": {
         "intervals": [0, 2, 4, 5, 7, 9, 11],
