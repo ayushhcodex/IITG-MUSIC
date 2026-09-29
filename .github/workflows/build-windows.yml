@@ -43,10 +43,13 @@ jobs:
         run: |
           pyinstaller "MrFold Music.spec"
           
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
       - name: Compile Inno Setup Installer
         shell: cmd
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows_installer.iss
+          iscc windows_installer.iss || "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows_installer.iss
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4

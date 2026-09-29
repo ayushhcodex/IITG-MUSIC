@@ -45,7 +45,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.ico'
+    icon='icon.ico' if os.path.exists('icon.ico') else None
 )
 coll = COLLECT(
     exe,
@@ -59,6 +59,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='MrFold Music.app',
-    icon='icon.ico',
+    icon='icon.ico' if os.path.exists('icon.ico') else None,
     bundle_identifier=None,
 )
