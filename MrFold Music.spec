@@ -7,7 +7,9 @@ a_datas = [
     ('static', 'static'),
     ('100 pdb with chemmical shift values .csv', '.'),
     ('6188_simulated_hsqc_backbone_example_music.csv', '.'),
-    ('TimGM6mb.sf2', '.')
+    ('TimGM6mb.sf2', '.'),
+    ('pdb_cache', 'pdb_cache'),
+    ('downloaded_pdb_csvs', 'downloaded_pdb_csvs')
 ]
 
 if sys.platform == 'win32':

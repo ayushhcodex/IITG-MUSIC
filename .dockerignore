@@ -1,0 +1,17 @@
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+build/
+dist/
+*.spec
+*.iss
+logs.zip
+pymol_plugin.zip
+sonicfold_plugin.zip
+*.wav
+*.mp3
+*.mid
+!TimGM6mb.sf2

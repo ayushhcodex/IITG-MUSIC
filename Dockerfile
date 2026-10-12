@@ -1,26 +1,31 @@
 FROM python:3.10-slim
 
-# Install fluidsynth and libsndfile1 (needed for scipy WAV writing)
+# Install system dependencies (fluidsynth, libsndfile1 for scipy WAV writing, curl)
 RUN apt-get update && apt-get install -y \
     fluidsynth \
     libsndfile1 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /app
+# Create non-root user (UID 1000 required by Hugging Face Spaces)
+RUN useradd -m -u 1000 user
+USER user
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH
+WORKDIR $HOME/app
 
 # Copy requirements and install Python dependencies
-COPY requirements.txt .
+COPY --chown=user requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
-COPY . .
+# Copy application files
+COPY --chown=user . .
 
-# Pre-create the outputs and static dirs
-RUN mkdir -p /app/outputs /app/static
+# Ensure runtime directories exist with full user permissions
+RUN mkdir -p outputs pdb_cache static
 
-# Expose port (HF Spaces uses 7860; Render provides PORT env var)
+# Expose default port (Hugging Face Spaces uses 7860; Render passes PORT env var)
 EXPOSE 7860
 
-# Run uvicorn — Hugging Face Spaces uses port 7860; Render provides PORT
-CMD uvicorn backend_app:app --host 0.0.0.0 --port ${PORT:-7860}
+# Shell-wrapped launch respecting $PORT if provided (Render) or defaulting to 7860 (Hugging Face)
+CMD ["sh", "-c", "uvicorn backend_app:app --host 0.0.0.0 --port ${PORT:-7860}"]

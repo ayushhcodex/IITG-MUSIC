@@ -1541,30 +1541,17 @@ body.light-theme .audio-visualizer-loader {
 }
 
 /* Fullscreen Show/Hide behaviors */
-#stageCard:fullscreen .music-theme-options-vertical {
+#stageCard:fullscreen .music-theme-options-vertical,
+#stageCard:-webkit-full-screen .music-theme-options-vertical,
+#stageCard:-moz-full-screen .music-theme-options-vertical,
+body.canvas-fullscreen-active .music-theme-options-vertical {
   display: flex !important;
 }
 
-#stageCard:fullscreen .live-hud-overlay {
-  top: auto !important;
-  bottom: 1.25rem !important;
-  left: 1.25rem !important;
-}
-
-/* Vendor Prefixes */
-#stageCard:-webkit-full-screen .music-theme-options-vertical {
-  display: flex !important;
-}
-#stageCard:-webkit-full-screen .live-hud-overlay {
-  top: auto !important;
-  bottom: 1.25rem !important;
-  left: 1.25rem !important;
-}
-
-#stageCard:-moz-full-screen .music-theme-options-vertical {
-  display: flex !important;
-}
-#stageCard:-moz-full-screen .live-hud-overlay {
+#stageCard:fullscreen .live-hud-overlay,
+#stageCard:-webkit-full-screen .live-hud-overlay,
+#stageCard:-moz-full-screen .live-hud-overlay,
+body.canvas-fullscreen-active .live-hud-overlay {
   top: auto !important;
   bottom: 1.25rem !important;
   left: 1.25rem !important;

@@ -23,6 +23,7 @@ CHEMICAL SHIFT PART 1/
 
 # Generated Audio, Video & Caches
 outputs/
+pdb_cache/
 batch_music_outputs/
 downloaded_pdb_csvs/
 sonify_input_csvs/

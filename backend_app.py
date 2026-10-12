@@ -43,11 +43,43 @@ except Exception as _e:
 OUTPUTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
 os.makedirs(OUTPUTS_DIR, exist_ok=True)
 
+# Local PDB structures cache directory (enables 100% offline 3D molecular visualization)
+PDB_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pdb_cache")
+os.makedirs(PDB_CACHE_DIR, exist_ok=True)
+
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 os.makedirs(STATIC_DIR, exist_ok=True)
 
 # Mount outputs for downloading audio, MIDI, CSV
 app.mount("/outputs", StaticFiles(directory=OUTPUTS_DIR), name="outputs")
+
+# Endpoint to serve PDB coordinate files locally with offline cache and online download fallback
+@app.get("/api/pdb/{pdb_id}")
+def get_pdb_file(pdb_id: str):
+    clean_id = pdb_id.strip().upper()
+    if not clean_id or len(clean_id) != 4:
+        raise HTTPException(status_code=400, detail="Invalid PDB ID format")
+
+    local_path = os.path.join(PDB_CACHE_DIR, f"{clean_id}.pdb")
+    if os.path.exists(local_path) and os.path.getsize(local_path) > 100:
+        return FileResponse(local_path, media_type="text/plain")
+
+    # If not cached locally, attempt to download and cache if internet is available
+    url = f"https://files.rcsb.org/download/{clean_id}.pdb"
+    try:
+        r = requests.get(url, timeout=10)
+        if r.status_code == 200 and len(r.text) > 100:
+            with open(local_path, "w", encoding="utf-8") as f:
+                f.write(r.text)
+            return FileResponse(local_path, media_type="text/plain")
+    except Exception as e:
+        print(f"Could not download PDB {clean_id} from RCSB: {e}")
+
+    cif_path = os.path.join(PDB_CACHE_DIR, f"{clean_id}.cif")
+    if os.path.exists(cif_path) and os.path.getsize(cif_path) > 100:
+        return FileResponse(cif_path, media_type="text/plain")
+
+    raise HTTPException(status_code=404, detail=f"PDB structure {clean_id} not available offline")
 
 # Passthrough for Gradio's internal startup check.
 # When running under HF Gradio SDK, our Mount("/", fastapi_app) inside Gradio's
@@ -255,10 +287,45 @@ def get_pdb_ss_map(pdb_code: str) -> Dict[int, str]:
     if not pdb_code or len(pdb_code) != 4:
         return {}
     ss_map = {}
+    clean_code = pdb_code.upper()
+
+    # 1. Parse from local cached PDB file first (instant, 100% offline!)
+    local_pdb = os.path.join(PDB_CACHE_DIR, f"{clean_code}.pdb")
+    if os.path.exists(local_pdb):
+        try:
+            with open(local_pdb, "r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    if line.startswith("HELIX"):
+                        try:
+                            start_seq = int(line[21:25].strip())
+                            end_seq = int(line[33:37].strip())
+                            for s in range(start_seq, end_seq + 1):
+                                ss_map[s] = "Alpha helix"
+                        except ValueError:
+                            pass
+                    elif line.startswith("SHEET"):
+                        try:
+                            start_seq = int(line[22:26].strip())
+                            end_seq = int(line[33:37].strip())
+                            for s in range(start_seq, end_seq + 1):
+                                ss_map[s] = "Beta sheet"
+                        except ValueError:
+                            pass
+            if ss_map:
+                return ss_map
+        except Exception as e:
+            print(f"Failed parsing local PDB ss_map for {clean_code}: {e}")
+
+    # 2. Fall back to online RCSB PDB fetch if not cached locally
     try:
-        url = f"https://files.rcsb.org/download/{pdb_code.upper()}.pdb"
+        url = f"https://files.rcsb.org/download/{clean_code}.pdb"
         r = requests.get(url, timeout=6)
         if r.status_code == 200:
+            try:
+                with open(local_pdb, "w", encoding="utf-8") as f:
+                    f.write(r.text)
+            except Exception:
+                pass
             for line in r.text.splitlines():
                 if line.startswith("HELIX"):
                     try:
@@ -277,7 +344,7 @@ def get_pdb_ss_map(pdb_code: str) -> Dict[int, str]:
                     except ValueError:
                         pass
     except Exception as e:
-        print(f"Failed fetching PDB ss_map for {pdb_code}: {e}")
+        print(f"Failed fetching online PDB ss_map for {clean_code}: {e}")
     return ss_map
 
 def fetch_real_bmrb_data(bmrb_id: str) -> Optional[Dict[str, Any]]:
@@ -438,6 +505,78 @@ def fetch_real_bmrb_data(bmrb_id: str) -> Optional[Dict[str, Any]]:
         print(f"Error fetching real BMRB data for {bmrb_id}: {e}")
         return None
 
+def find_local_cached_csv(identifier_clean: str, linked_bmrb: str = "", linked_pdb: str = "") -> Optional[str]:
+    import glob
+    candidates = []
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    downloaded_dir = os.path.join(base_dir, "downloaded_pdb_csvs")
+    backbone_dir = os.path.join(base_dir, "backbone_csv_downloaded")
+
+    ids_to_check = [i for i in [identifier_clean, linked_pdb, linked_bmrb] if i]
+    for cur_id in ids_to_check:
+        candidates.append(os.path.join(OUTPUTS_DIR, f"{cur_id}_dataset.csv"))
+        candidates.append(os.path.join(downloaded_dir, f"{cur_id}_dataset.csv"))
+        candidates.append(os.path.join(OUTPUTS_DIR, cur_id, "dataset.csv"))
+        candidates.append(os.path.join(backbone_dir, f"{cur_id}_simulated_hsqc_backbone.csv"))
+        candidates.extend(glob.glob(os.path.join(OUTPUTS_DIR, f"{cur_id}_BMRB*", "dataset.csv")))
+        candidates.extend(glob.glob(os.path.join(OUTPUTS_DIR, f"*_BMRB{cur_id}", "dataset.csv")))
+
+    for c in candidates:
+        if os.path.exists(c) and os.path.getsize(c) > 50:
+            return c
+    return None
+
+def load_cached_dataset_rows(use_cache: str) -> List[Dict[str, Any]]:
+    df_cache = pd.read_csv(use_cache)
+    rows = []
+    for idx, row in df_cache.iterrows():
+        freq = None
+        for col in ['Final_Freq', 'Effective', 'final_freq']:
+            if col in row and pd.notnull(row[col]):
+                try:
+                    freq = float(row[col])
+                    break
+                except (ValueError, TypeError):
+                    pass
+        if freq is None:
+            freq = 7500.0
+        struct = str(row.get("Secondary Structure",
+                     row.get("secondary_structure", "Random coil")))
+        seq_num = None
+        for seq_col in ['sequence', 'seq', 'res_num', 'residue']:
+            if seq_col in row and pd.notnull(row[seq_col]):
+                try:
+                    seq_num = int(row[seq_col])
+                    break
+                except (ValueError, TypeError):
+                    pass
+        if seq_num is None:
+            seq_num = idx + 1
+
+        aa_val = str(row.get("chem_comp_ID", row.get("amino_acid", row.get("aa", "ALA")))).strip()
+        row_dict = {
+            "sequence":            seq_num,
+            "chem_comp_ID":        aa_val or "ALA",
+            "Final_Freq":          round(freq, 2),
+            "Secondary Structure": struct
+        }
+        for h_col in ['h_ppm', 'X_shift', '1H']:
+            if h_col in row and pd.notnull(row[h_col]):
+                try:
+                    row_dict["h_ppm"] = float(row[h_col])
+                    break
+                except (ValueError, TypeError):
+                    pass
+        for n_col in ['n_ppm', 'Y_shift', '15N']:
+            if n_col in row and pd.notnull(row[n_col]):
+                try:
+                    row_dict["n_ppm"] = float(row[n_col])
+                    break
+                except (ValueError, TypeError):
+                    pass
+        rows.append(row_dict)
+    return rows
+
 @app.get("/api/fetch/{identifier}")
 def fetch_protein_data(identifier: str):
     identifier_clean = identifier.strip().upper()
@@ -492,9 +631,7 @@ def fetch_protein_data(identifier: str):
                 # Fall back to local BMRB→PDB lookup table
                 pdb_id = BMRB_TO_PDB.get(identifier_clean, "")
 
-            # Fetch the real secondary structure map from RCSB PDB.
-            # This guarantees that every user gets the same scientifically correct
-            # secondary structure assignment — not an artificial repeating pattern.
+            # Fetch the real secondary structure map (parsed from local PDB cache if available)
             ss_map = get_pdb_ss_map(pdb_id) if pdb_id else {}
 
             rows = []
@@ -506,9 +643,6 @@ def fetch_protein_data(identifier: str):
                 n_hz = n_ppm * (spec_mhz / 10.0)
                 final_freq = round(float(np.sqrt(h_hz * n_hz)), 2)
 
-                # Use the real RCSB-derived secondary structure for this residue.
-                # Fall back to "Random coil" for residues not covered by HELIX/SHEET
-                # records (e.g. loop regions), consistent with the BMRB fetch path.
                 seq_num = int(row.get("sequence", idx + 1))
                 struct = ss_map.get(seq_num, "Random coil")
 
@@ -537,10 +671,28 @@ def fetch_protein_data(identifier: str):
                 "csv_url":          f"/outputs/{identifier_clean}_dataset.csv"
             }
 
-
     # ── STEP 2: Check hard-coded presets (bmrb_id or pdb_id) ─────────────────
     for bmrb_key, preset_data in PRESETS.items():
         if identifier_clean == bmrb_key or identifier_clean == preset_data["pdb_id"]:
+            # Check offline cache first
+            cached_csv = find_local_cached_csv(identifier_clean, linked_bmrb=bmrb_key, linked_pdb=preset_data["pdb_id"])
+            if cached_csv:
+                rows = load_cached_dataset_rows(cached_csv)
+                if rows:
+                    # Sync to outputs/{pdb_id}_dataset.csv
+                    out_pdb_csv = os.path.join(OUTPUTS_DIR, f"{preset_data['pdb_id']}_dataset.csv")
+                    pd.DataFrame(rows).to_csv(out_pdb_csv, index=False)
+                    return {
+                        "status": "success",
+                        "pdb_id": preset_data["pdb_id"],
+                        "bmrb_id": bmrb_key,
+                        "title": f"{preset_data['title']} (BMRB {bmrb_key} / PDB {preset_data['pdb_id']})",
+                        "spectrometer_mhz": KNOWN_SPECTROMETER_MHZ.get(str(bmrb_key), 750.0),
+                        "rows": rows,
+                        "csv_url": f"/outputs/{preset_data['pdb_id']}_dataset.csv"
+                    }
+
+            # Fall back to online fetch if cache not found
             res = fetch_real_bmrb_data(bmrb_key)
             if res and res.get("status") == "success":
                 res["pdb_id"] = preset_data["pdb_id"]
@@ -550,14 +702,25 @@ def fetch_protein_data(identifier: str):
 
     # ── STEP 3: Digits-only BMRB ID ───────────────────────────────────────────
     if identifier_clean.isdigit():
-        # Check if this BMRB ID is in our 100-PDB lookup table
         known_pdb = BMRB_TO_PDB.get(identifier_clean, "")
+        cached_csv = find_local_cached_csv(identifier_clean, linked_pdb=known_pdb)
+        if cached_csv:
+            rows = load_cached_dataset_rows(cached_csv)
+            if rows:
+                return {
+                    "status": "success",
+                    "pdb_id": known_pdb,
+                    "bmrb_id": identifier_clean,
+                    "title": f"BMRB {identifier_clean}" + (f" / PDB {known_pdb}" if known_pdb else ""),
+                    "spectrometer_mhz": KNOWN_SPECTROMETER_MHZ.get(str(identifier_clean), 750.0),
+                    "rows": rows,
+                    "csv_url": f"/outputs/{identifier_clean}_dataset.csv"
+                }
+
         res = fetch_real_bmrb_data(identifier_clean)
         if res and res.get("status") == "success":
-            # Attach the PDB ID from our local lookup if the API didn't find one
             if not res.get("pdb_id") and known_pdb:
                 res["pdb_id"] = known_pdb
-                # Write a PDB-named copy so fetch-by-pdb also finds cached data
                 pdb_csv = os.path.join(OUTPUTS_DIR, f"{known_pdb}_dataset.csv")
                 pd.DataFrame(res["rows"]).to_csv(pdb_csv, index=False)
             return res
@@ -567,111 +730,69 @@ def fetch_protein_data(identifier: str):
                 content={
                     "status": "error",
                     "message": (f"No assigned NMR chemical shift data available "
-                                f"in BMRB for entry ID '{identifier_clean}'.")
+                                f"in BMRB for entry ID '{identifier_clean}'. (Offline mode: please connect to internet or select a pre-cached preset)")
                 }
             )
 
     # ── STEP 4: 4-character PDB ID ────────────────────────────────────────────
     if len(identifier_clean) == 4:
-        # Check our local 100-PDB lookup table FIRST (avoids an RCSB API call)
-        if identifier_clean in PDB_TO_BMRB:
-            linked_bmrb = PDB_TO_BMRB[identifier_clean]
-            # Check for an already-cached dataset in outputs/
-            cached_csv = os.path.join(OUTPUTS_DIR, f"{linked_bmrb}_dataset.csv")
-            pdb_cached_csv = os.path.join(OUTPUTS_DIR, f"{identifier_clean}_dataset.csv")
-            # Prefer PDB-named cache, then BMRB-named cache
-            use_cache = pdb_cached_csv if os.path.exists(pdb_cached_csv) else (
-                        cached_csv      if os.path.exists(cached_csv)     else None)
-            if use_cache:
-                df_cache = pd.read_csv(use_cache)
-                rows = []
-                for idx, row in df_cache.iterrows():
-                    freq = None
-                    for col in ['Final_Freq', 'Effective', 'final_freq']:
-                        if col in row and pd.notnull(row[col]):
-                            freq = float(row[col])
-                            break
-                    if freq is None:
-                        freq = 7500.0
-                    struct = str(row.get("Secondary Structure",
-                                 row.get("secondary_structure", "Random coil")))
-                    row_dict = {
-                        "sequence":            int(row.get("sequence", idx + 1)),
-                        "chem_comp_ID":        str(row.get("chem_comp_ID", "ALA")),
-                        "Final_Freq":          round(freq, 2),
-                        "Secondary Structure": struct
-                    }
-                    # Preserve raw PPM columns if the cache has them — the sonify
-                    # endpoint needs these to recompute Final_Freq at the user's
-                    # chosen spectrometer frequency.
-                    if "h_ppm" in row and pd.notnull(row["h_ppm"]):
-                        row_dict["h_ppm"] = float(row["h_ppm"])
-                    if "n_ppm" in row and pd.notnull(row["n_ppm"]):
-                        row_dict["n_ppm"] = float(row["n_ppm"])
-                    rows.append(row_dict)
-                # Overwrite both named CSVs so they are always in sync
-                df_out = pd.DataFrame(rows)
-                df_out.to_csv(pdb_cached_csv, index=False)
-                df_out.to_csv(cached_csv,      index=False)
+        linked_bmrb = PDB_TO_BMRB.get(identifier_clean, "")
+        cached_csv = find_local_cached_csv(identifier_clean, linked_bmrb=linked_bmrb)
+        if cached_csv:
+            rows = load_cached_dataset_rows(cached_csv)
+            if rows:
+                pdb_cached_csv = os.path.join(OUTPUTS_DIR, f"{identifier_clean}_dataset.csv")
+                pd.DataFrame(rows).to_csv(pdb_cached_csv, index=False)
                 return {
                     "status":   "success",
                     "pdb_id":   identifier_clean,
                     "bmrb_id":  linked_bmrb,
-                    "title":    f"PDB {identifier_clean} (BMRB {linked_bmrb})",
+                    "title":    f"PDB {identifier_clean}" + (f" (BMRB {linked_bmrb})" if linked_bmrb else ""),
                     "spectrometer_mhz": KNOWN_SPECTROMETER_MHZ.get(str(linked_bmrb), 750.0),
                     "rows":     rows,
                     "csv_url":  f"/outputs/{identifier_clean}_dataset.csv"
                 }
-            # No cache → fetch from BMRB using the known BMRB ID
+
+        # If not cached locally, try online fetch if BMRB ID is known
+        if linked_bmrb:
             res = fetch_real_bmrb_data(linked_bmrb)
             if res and res.get("status") == "success":
                 res["pdb_id"] = identifier_clean
                 res["title"]  = f"PDB {identifier_clean} (BMRB {linked_bmrb})"
-                # Write a PDB-named copy as well
                 pdb_csv_path = os.path.join(OUTPUTS_DIR, f"{identifier_clean}_dataset.csv")
                 pd.DataFrame(res["rows"]).to_csv(pdb_csv_path, index=False)
                 res["csv_url"] = f"/outputs/{identifier_clean}_dataset.csv"
                 return res
 
-        # Not in local lookup — fall back to RCSB PDB API
+        # Not in local lookup/cache — fall back to RCSB PDB API
         try:
             r = requests.get(
                 f"https://data.rcsb.org/rest/v1/core/entry/{identifier_clean}",
-                timeout=25
+                timeout=10
             )
             if r.status_code == 200:
                 rcsb_data = r.json()
                 ext_refs  = rcsb_data.get("rcsb_external_references", [])
                 for ref in ext_refs:
                     if ref.get("type", "").upper() == "BMRB" and ref.get("id"):
-                        linked_bmrb = str(ref["id"]).strip()
-                        if linked_bmrb.isdigit():
-                            res = fetch_real_bmrb_data(linked_bmrb)
+                        candidate_bmrb = str(ref["id"]).strip()
+                        if candidate_bmrb.isdigit():
+                            res = fetch_real_bmrb_data(candidate_bmrb)
                             if res and res.get("status") == "success":
                                 res["pdb_id"] = identifier_clean
                                 res["title"]  = (
                                     f"{rcsb_data.get('struct', {}).get('title', f'PDB {identifier_clean}')}"
-                                    f" (BMRB {linked_bmrb} / PDB {identifier_clean})"
+                                    f" (BMRB {candidate_bmrb} / PDB {identifier_clean})"
                                 )
-                                # Cache PDB-named CSV too
                                 pdb_csv_path = os.path.join(OUTPUTS_DIR,
                                                             f"{identifier_clean}_dataset.csv")
                                 pd.DataFrame(res["rows"]).to_csv(pdb_csv_path, index=False)
                                 res["csv_url"] = f"/outputs/{identifier_clean}_dataset.csv"
-                                # Update local lookup for future calls
-                                PDB_TO_BMRB[identifier_clean] = linked_bmrb
-                                BMRB_TO_PDB[linked_bmrb]      = identifier_clean
+                                PDB_TO_BMRB[identifier_clean] = candidate_bmrb
+                                BMRB_TO_PDB[candidate_bmrb]   = identifier_clean
                                 return res
         except requests.exceptions.Timeout:
             print(f"Timeout checking RCSB PDB API for {identifier_clean}")
-            return JSONResponse(
-                status_code=504,
-                content={
-                    "status":  "error",
-                    "message": (f"Connection to the RCSB PDB database timed out. "
-                                f"Please try loading '{identifier_clean}' again.")
-                }
-            )
         except Exception as e:
             print(f"Error checking RCSB PDB API for {identifier_clean}: {e}")
 
@@ -680,10 +801,7 @@ def fetch_protein_data(identifier: str):
             content={
                 "status":  "error",
                 "message": (f"No BMRB NMR chemical shift data available for PDB ID "
-                            f"'{identifier_clean}'. This PDB structure does not have "
-                            f"deposited NMR chemical shift assignments linked in BMRB. "
-                            f"Please enter an NMR-assigned PDB ID (e.g. 1ST7, 1DMB, 1CA2, 2MV0), "
-                            f"a BMRB ID (e.g. 6188, 25237), or upload your own CSV dataset.")
+                            f"'{identifier_clean}'. If running offline, please choose a preset or upload a CSV dataset.")
             }
         )
 
