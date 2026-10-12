@@ -1,129 +1,33 @@
-import os
-import gradio as gr
-import gradio.routes
-from backend_app import app as fastapi_app
-
-# ── 1. ZeroGPU stub ──────────────────────────────────────────────────────────
+# ── 1. ZeroGPU stub (MUST BE AT THE VERY TOP OF THE FILE) ────────────────────
 try:
     import spaces
     @spaces.GPU
     def dummy_gpu_fn():
         pass
-    print("Hugging Face ZeroGPU environment detected.")
+    print("[app.py] Hugging Face ZeroGPU environment detected.")
 except ImportError:
     def dummy_gpu_fn():
         pass
 
-# ── 2. Patch Gradio's ASGI app to expose our FastAPI app under /gradio_api ────
-# Gradio 5/6 SSR runs a Node.js proxy at :7860 that forwards /gradio_api/*
-# and /run/* requests directly to Python at :7861.
-#
-# We mount our FastAPI sub-application under the /gradio_api/custom namespace.
-# Sveltekit Node proxy will automatically forward these requests, allowing the
-# iframe and frontend fetch calls to reach our FastAPI routes.
-_original_create_app = gradio.routes.App.create_app
+import os
+import gradio as gr
+from backend_app import app as fastapi_app
 
-def _patched_create_app(cls, *args, **kwargs):
-    """Wrap Gradio's create_app to inject our FastAPI sub-apps.
-    cls is explicitly captured so it is NOT forwarded in *args to the original
-    bound method (which already has cls=App pre-bound). Without this, args[0]
-    would be App instead of the Blocks instance, causing blocks.get_config_file()
-    to fail with 'type object App has no attribute get_config_file'.
-    """
-    gradio_asgi = _original_create_app(*args, **kwargs)
-
-    try:
-        # Mount our FastAPI (which contains /api/* and /outputs/* sub-mounts)
-        # at /gradio_api/custom inside Gradio's ASGI app.
-        gradio_asgi.mount("/gradio_api/custom", fastapi_app, name="mrfold_custom")
-        print("[app.py] ✓ Mounted FastAPI app at /gradio_api/custom.")
-    except Exception as e:
-        print(f"[app.py] WARNING: Failed to mount FastAPI app: {e}")
-
-    return gradio_asgi
-
-# Replace the classmethod — store the original then reassign as a plain function
-gradio.routes.App.create_app = classmethod(_patched_create_app)
-
-# ── 3. Build Gradio UI with full-page iframe ──────────────────────────────────
-# The iframe src="/gradio_api/custom/" loads our FastAPI app's static/index.html.
-# All fetch() calls in app.js use relative paths prefixed by API_PREFIX (/gradio_api/custom),
-# ensuring they go through the Node proxy and hit the custom mount.
-with gr.Blocks(title="MrFold Music Studio", fill_width=True, fill_height=True) as demo:
-    # Hidden ZeroGPU activator — required by HF ZeroGPU validation
+# ── 2. Minimal Gradio interface to satisfy ZeroGPU validation ─────────────────
+with gr.Blocks(title="MrFold Music Studio") as demo:
     _btn = gr.Button("ZeroGPU Activator", visible=False)
     _btn.click(fn=dummy_gpu_fn)
 
-    gr.HTML(
-        """
-        <style>
-          html, body, .gradio-container, .main, .contain, #root, gradio-app {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: 100% !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            background: #07080d !important;
-            overflow: hidden !important;
-          }
-          footer, header, nav { display: none !important; }
-          iframe {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            border: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            z-index: 999999 !important;
-          }
-        </style>
-        <iframe
-          src="/gradio_api/custom/"
-          style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; margin: 0; padding: 0; z-index: 999999;"
-          allow="autoplay"
-          title="MrFold Music Studio"
-        ></iframe>
-        """,
-    )
+# ── 3. Clean integration: Mount Gradio onto the existing FastAPI application ──
+# This preserves FastAPI at the root:
+# - "/" serves static/index.html (the full MrFold Music UI directly, no iframe!)
+# - "/api/*" and "/outputs/*" work directly without any proxy/iframe hacks
+# - "/gradio" hosts the Gradio interface to satisfy HF ZeroGPU requirements
+app = gr.mount_gradio_app(fastapi_app, demo, path="/gradio")
 
-gradio_css = """
-body, html {
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  background-color: #07080d !important;
-  width: 100vw !important;
-  height: 100vh !important;
-}
-.gradio-container, .gradio-container > .main, .gradio-container .contain, div.gradio-container {
-  max-width: 100% !important;
-  width: 100vw !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  height: 100vh !important;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: #07080d !important;
-}
-iframe {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  border: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  z-index: 999999 !important;
-}
-"""
-
-# ── 4. Launch ─────────────────────────────────────────────────────────────────
+# ── 4. Entrypoint ─────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    demo.launch(css=gradio_css)
-else:
-    # HF Gradio runner imports app.py as a module
-    demo.launch(prevent_thread_lock=True, css=gradio_css)
+    import uvicorn
+    port = int(os.environ.get("PORT", 7860))
+    print(f"[app.py] Launching combined FastAPI + Gradio server on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)

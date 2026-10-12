@@ -3,9 +3,10 @@ title: MrFold Music Studio
 emoji: 🎵
 colorFrom: indigo
 colorTo: pink
-sdk: docker
-app_port: 7860
+sdk: gradio
+app_file: app.py
 pinned: false
+fullWidth: true
 ---
 
 # MrFold Music Studio - Molecular Sonification
