@@ -235,7 +235,7 @@ function getAminoAcidColor(aa) {
 window.addEventListener("DOMContentLoaded", () => {
   init3DViewer("1DMB");
   loadPresets();
-  onThemeChange();
+  onThemeChange(false);
   fetchOnlineData("25237");
   setupAudioListeners();
   setupKeyboardShortcuts();
@@ -265,6 +265,32 @@ function toggleRecordingMode() {
   }, 120);
 }
 
+function syncFullscreenState() {
+  const isFs = !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+
+  if (isFs) {
+    document.body.classList.add("canvas-fullscreen-active");
+    const themeSelect = document.getElementById("themeSelect");
+    if (themeSelect) {
+      updateMusicAestheticButtons(themeSelect.value);
+    }
+  } else {
+    document.body.classList.remove("canvas-fullscreen-active");
+  }
+
+  setTimeout(() => {
+    if (viewer) {
+      viewer.resize();
+      viewer.render();
+    }
+  }, 100);
+}
+
 function setupKeyboardShortcuts() {
   window.addEventListener("keydown", (e) => {
     // Avoid triggering shortcuts when user is typing in search or input fields
@@ -275,6 +301,16 @@ function setupKeyboardShortcuts() {
       if (document.body.classList.contains("recording-mode")) {
         toggleRecordingMode();
       }
+      if (document.body.classList.contains("canvas-fullscreen-active")) {
+        toggleCanvasFullscreen();
+      }
+    }
+    if (e.key === "f" || e.key === "F") {
+      toggleCanvasFullscreen();
+    }
+    if (e.key === " " || e.code === "Space") {
+      e.preventDefault();
+      togglePlayPause();
     }
   });
 
@@ -284,20 +320,46 @@ function setupKeyboardShortcuts() {
       viewer.render();
     }
   });
-}
-// Fullscreen state is now managed entirely via CSS toggle instead of Native Fullscreen API
 
-// Toggle Fullscreen on Molecular Canvas (In-browser Pseudo-Fullscreen)
+  document.addEventListener("fullscreenchange", syncFullscreenState);
+  document.addEventListener("webkitfullscreenchange", syncFullscreenState);
+  document.addEventListener("mozfullscreenchange", syncFullscreenState);
+  document.addEventListener("MSFullscreenChange", syncFullscreenState);
+}
+
+// Toggle Fullscreen on Molecular Canvas (Dual support: Native Fullscreen API + CSS fallback)
 function toggleCanvasFullscreen() {
-  document.body.classList.toggle("canvas-fullscreen-active");
-  
+  const container = document.getElementById("stageCard");
+  const isFs = !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+
+  if (document.body.classList.contains("canvas-fullscreen-active") || isFs) {
+    document.body.classList.remove("canvas-fullscreen-active");
+    if (isFs && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  } else {
+    document.body.classList.add("canvas-fullscreen-active");
+    const themeSelect = document.getElementById("themeSelect");
+    if (themeSelect) {
+      updateMusicAestheticButtons(themeSelect.value);
+    }
+    if (container && container.requestFullscreen) {
+      container.requestFullscreen().catch(() => {});
+    }
+  }
+
   // Force viewer resize & render after layout reflow
   setTimeout(() => {
     if (viewer) {
       viewer.resize();
       viewer.render();
     }
-  }, 100);
+  }, 120);
 }
 
 
@@ -679,8 +741,9 @@ const THEME_SCALES = {
   ]
 };
 
-function onThemeChange() {
-  const theme = document.getElementById("themeSelect").value;
+function onThemeChange(triggerRegen = true) {
+  const themeSelect = document.getElementById("themeSelect");
+  const theme = themeSelect ? themeSelect.value : "Indian Classical";
   updateMusicAestheticButtons(theme);
   const raagSelect = document.getElementById("raagSelect");
   const scaleLabel = document.getElementById("scaleLabel");
@@ -712,7 +775,12 @@ function onThemeChange() {
     }
   }
 
-  autoRegenerateIfReady();
+  const currentScale = raagSelect ? raagSelect.value : "";
+  syncActiveMusicSubButton(theme, currentScale);
+
+  if (triggerRegen) {
+    autoRegenerateIfReady();
+  }
 }
 
 function autoRegenerateIfReady() {
@@ -1027,8 +1095,18 @@ function setupAudioListeners() {
     }
   });
   
+  const syncPlayPauseButtons = (isPlaying) => {
+    const btn = document.getElementById("btnPlayPause");
+    const fsBtn = document.getElementById("btnFsPlayPause");
+    const symbol = isPlaying ? "⏸" : "▶";
+    if (btn) btn.textContent = symbol;
+    if (fsBtn) fsBtn.textContent = symbol;
+  };
+
+  audio.addEventListener("play", () => syncPlayPauseButtons(true));
+  audio.addEventListener("pause", () => syncPlayPauseButtons(false));
   audio.addEventListener("ended", () => {
-    document.getElementById("btnPlayPause").textContent = "▶";
+    syncPlayPauseButtons(false);
     // Hide floating note and ribbon pointer when song ends
     const wrapper = document.getElementById("floatingNoteWrapper");
     const pointer = document.getElementById("ribbonNotePointer");
@@ -1041,17 +1119,25 @@ function setupAudioListeners() {
       mediaRecorder.stop();
     }
   });
+
+  const raagSelect = document.getElementById("raagSelect");
+  if (raagSelect) {
+    raagSelect.addEventListener("change", () => {
+      const themeSelect = document.getElementById("themeSelect");
+      const theme = themeSelect ? themeSelect.value : "Indian Classical";
+      syncActiveMusicSubButton(theme, raagSelect.value);
+      autoRegenerateIfReady();
+    });
+  }
 }
 
 function togglePlayPause() {
   const audio = document.getElementById("audioPlayer");
-  const btn = document.getElementById("btnPlayPause");
+  if (!audio) return;
   if (audio.paused) {
-    audio.play();
-    btn.textContent = "⏸";
+    audio.play().catch(e => console.log("Play blocked:", e));
   } else {
     audio.pause();
-    btn.textContent = "▶";
   }
 }
 
@@ -1212,10 +1298,19 @@ function selectMusicAesthetic(themeValue) {
   if (themeSelect) {
     themeSelect.value = themeValue;
   }
-  onThemeChange();
-  
-  // Highlight active button and show/hide sub-options
-  updateMusicAestheticButtons(themeValue);
+  onThemeChange(true);
+}
+
+function syncActiveMusicSubButton(theme, scale) {
+  const parentBtn = document.querySelector(`.btn-music-option[data-value="${theme}"]`);
+  if (parentBtn) {
+    const subPanel = parentBtn.nextElementSibling;
+    if (subPanel && subPanel.classList.contains("music-sub-options")) {
+      subPanel.querySelectorAll(".btn-music-sub").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-scale") === scale);
+      });
+    }
+  }
 }
 
 function updateMusicAestheticButtons(themeValue) {
@@ -1227,6 +1322,24 @@ function updateMusicAestheticButtons(themeValue) {
       btn.classList.remove("active");
     }
   });
+
+  // Show/hide sub-option panels
+  const panelMap = {
+    "Indian Classical": "subOptionsIndian",
+    "Western Orchestral": "subOptionsWestern",
+    "Ambient Electronic": "subOptionsAmbient"
+  };
+  Object.entries(panelMap).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = (key === themeValue) ? "flex" : "none";
+    }
+  });
+
+  const raagSelect = document.getElementById("raagSelect");
+  if (raagSelect) {
+    syncActiveMusicSubButton(themeValue, raagSelect.value);
+  }
 }
 
 function selectMusicScale(themeValue, scaleValue) {
@@ -1234,8 +1347,7 @@ function selectMusicScale(themeValue, scaleValue) {
   const themeSelect = document.getElementById("themeSelect");
   if (themeSelect && themeSelect.value !== themeValue) {
     themeSelect.value = themeValue;
-    onThemeChange();
-    updateMusicAestheticButtons(themeValue);
+    onThemeChange(false);
   }
 
   // Now select the raag/scale
@@ -1245,15 +1357,7 @@ function selectMusicScale(themeValue, scaleValue) {
   }
 
   // Highlight active sub-option within that theme's panel
-  const parentBtn = document.querySelector(`.btn-music-option[data-value="${themeValue}"]`);
-  if (parentBtn) {
-    const subPanel = parentBtn.nextElementSibling;
-    if (subPanel && subPanel.classList.contains("music-sub-options")) {
-      subPanel.querySelectorAll(".btn-music-sub").forEach(btn => {
-        btn.classList.toggle("active", btn.getAttribute("data-scale") === scaleValue);
-      });
-    }
-  }
+  syncActiveMusicSubButton(themeValue, scaleValue);
 
   // Regenerate music with the new scale
   autoRegenerateIfReady();
@@ -1261,16 +1365,7 @@ function selectMusicScale(themeValue, scaleValue) {
 
 // Fullscreen playback toggle
 function fsTogglePlayPause() {
-  const audio = document.getElementById("audioPlayer");
-  const btn = document.getElementById("btnFsPlayPause");
-  if (!audio) return;
-  if (audio.paused) {
-    audio.play().catch(e => console.log("Play blocked:", e));
-    if (btn) btn.textContent = "⏸";
-  } else {
-    audio.pause();
-    if (btn) btn.textContent = "▶";
-  }
+  togglePlayPause();
 }
 
 // Fullscreen search — load protein without exiting fullscreen

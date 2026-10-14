@@ -1342,6 +1342,11 @@ body.canvas-fullscreen-active .structure-style-options-horizontal {
   flex-direction: column;
   gap: 0.4rem;
   width: 165px;
+  max-height: calc(100% - 2.5rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  pointer-events: auto;
 }
 
 /* Sub-options container */
@@ -1540,18 +1545,45 @@ body.light-theme .audio-visualizer-loader {
   50% { height: 48px; }
 }
 
-/* Fullscreen Show/Hide behaviors */
+/* Fullscreen Show/Hide behaviors - Standard */
+:fullscreen .music-theme-options-vertical,
 #stageCard:fullscreen .music-theme-options-vertical,
-#stageCard:-webkit-full-screen .music-theme-options-vertical,
-#stageCard:-moz-full-screen .music-theme-options-vertical,
 body.canvas-fullscreen-active .music-theme-options-vertical {
   display: flex !important;
 }
 
+/* WebKit Vendor Prefix */
+:-webkit-full-screen .music-theme-options-vertical,
+#stageCard:-webkit-full-screen .music-theme-options-vertical {
+  display: flex !important;
+}
+
+/* Gecko Vendor Prefix */
+:-moz-full-screen .music-theme-options-vertical,
+#stageCard:-moz-full-screen .music-theme-options-vertical {
+  display: flex !important;
+}
+
+/* Live HUD overlay relocation in fullscreen - Standard */
+:fullscreen .live-hud-overlay,
 #stageCard:fullscreen .live-hud-overlay,
-#stageCard:-webkit-full-screen .live-hud-overlay,
-#stageCard:-moz-full-screen .live-hud-overlay,
 body.canvas-fullscreen-active .live-hud-overlay {
+  top: auto !important;
+  bottom: 1.25rem !important;
+  left: 1.25rem !important;
+}
+
+/* WebKit Vendor Prefix */
+:-webkit-full-screen .live-hud-overlay,
+#stageCard:-webkit-full-screen .live-hud-overlay {
+  top: auto !important;
+  bottom: 1.25rem !important;
+  left: 1.25rem !important;
+}
+
+/* Gecko Vendor Prefix */
+:-moz-full-screen .live-hud-overlay,
+#stageCard:-moz-full-screen .live-hud-overlay {
   top: auto !important;
   bottom: 1.25rem !important;
   left: 1.25rem !important;
