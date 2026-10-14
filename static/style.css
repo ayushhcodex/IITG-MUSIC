@@ -1627,9 +1627,9 @@ body.light-theme .fs-search-btn:hover {
   background: rgba(0, 0, 0, 0.08);
 }
 
-/* Center container for Search + MrFold Music */
+/* Center container for Search + MrFold Music (Always visible in header) */
 .fs-center-container {
-  display: none;
+  display: flex !important;
   align-items: center;
   gap: 1.5rem;
   margin: 0 auto;
@@ -1637,11 +1637,6 @@ body.light-theme .fs-search-btn:hover {
   padding-right: 1rem;
   white-space: nowrap;
 }
-
-#stageCard:fullscreen .fs-center-container { display: flex; }
-#stageCard:-webkit-full-screen .fs-center-container { display: flex; }
-#stageCard:-moz-full-screen .fs-center-container { display: flex; }
-body.canvas-fullscreen-active .fs-center-container { display: flex !important; }
 
 /* The search box within the center container */
 .fs-search-box {

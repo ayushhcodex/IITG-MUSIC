@@ -340,11 +340,18 @@ function init3DViewer(pdbId) {
     backgroundColor: isLight ? "#e2e8f0" : "#090a12",
     id: "viewer3d"
   });
+
+  setTimeout(() => {
+    if (viewer) {
+      viewer.resize();
+      viewer.render();
+    }
+  }, 150);
   
   load3DStructure(pdbId);
 }
 
-// Load 3D structure from PDB ID (Offline Local Cache First, Online Fallback)
+// Load 3D structure from PDB ID (CDN first with offline fallback)
 function load3DStructure(pdbId) {
   if (!viewer) return;
   if (!pdbId || pdbId === "" || pdbId === "None") {
@@ -357,47 +364,44 @@ function load3DStructure(pdbId) {
     return;
   }
 
-  viewer.clear(); // Wipe existing models before loading new structure
+  viewer.clear();
   currentPdbId = pdbId.toUpperCase();
   const label = document.getElementById("currentPdbLabel");
   if (label) label.textContent = currentPdbId;
   document.getElementById("molTitle").textContent = `Protein Structure (PDB: ${currentPdbId})`;
   document.getElementById("molSubtitle").textContent = "Loading 3D molecular coordinates...";
 
-  // 1. Try local server API first (instant, 100% offline, avoids external CORS/network issues)
-  fetch(`/api/pdb/${encodeURIComponent(currentPdbId)}`)
-    .then(async (resp) => {
-      if (!resp.ok) throw new Error("Local PDB not available (HTTP " + resp.status + ")");
-      const pdbText = await resp.text();
-      if (!pdbText || pdbText.trim().length < 50) {
-        throw new Error("Empty PDB data received");
-      }
-      viewer.clear();
-      viewer.addModel(pdbText, "pdb");
-      changeStructureStyle(currentStructureStyle);
-      viewer.zoomTo();
-      viewer.render();
-      document.getElementById("molSubtitle").textContent = "BioNMR IITG";
-    })
-    .catch((localErr) => {
-      console.warn("Local PDB fetch failed, falling back to 3Dmol download:", localErr);
-      // 2. Fall back to online $3Dmol.download if not cached locally
-      $3Dmol.download("pdb:" + currentPdbId, viewer, { multimodel: false }, () => {
-        changeStructureStyle(currentStructureStyle);
-        viewer.zoomTo();
-        viewer.render();
-        document.getElementById("molSubtitle").textContent = "BioNMR IITG";
-      }, (err) => {
+  function applyModelAndRender() {
+    changeStructureStyle(currentStructureStyle);
+    viewer.zoomTo();
+    viewer.render();
+    document.getElementById("molSubtitle").textContent = "BioNMR IITG";
+  }
+
+  // 1. Download directly via 3Dmol CDN (handles multimodel & secondary structure)
+  $3Dmol.download("pdb:" + currentPdbId, viewer, { multimodel: false }, () => {
+    applyModelAndRender();
+  }, (err) => {
+    // 2. Try local server API fallback
+    fetch(`/api/pdb/${encodeURIComponent(currentPdbId)}`)
+      .then(async (resp) => {
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        const pdbText = await resp.text();
+        if (!pdbText || pdbText.trim().length < 50) throw new Error("Empty text");
+        viewer.clear();
+        viewer.addModel(pdbText, "pdb", { multimodel: false });
+        applyModelAndRender();
+      })
+      .catch(() => {
+        // 3. Try mmCIF format fallback
         $3Dmol.download("cif:" + currentPdbId, viewer, { multimodel: false }, () => {
-          changeStructureStyle(currentStructureStyle);
-          viewer.zoomTo();
-          viewer.render();
+          applyModelAndRender();
           document.getElementById("molSubtitle").textContent = "BioNMR IITG (mmCIF format)";
-        }, (err2) => {
+        }, () => {
           document.getElementById("molSubtitle").textContent = `⚠️ Could not download 3D coordinates for PDB: ${currentPdbId}`;
         });
       });
-    });
+  });
 }
 
 function switch3DStructure() {
