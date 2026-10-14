@@ -285,8 +285,7 @@ function setupKeyboardShortcuts() {
     }
   });
 }
-  // Fullscreen state is now managed entirely via CSS toggle instead of Native Fullscreen API
-}
+// Fullscreen state is now managed entirely via CSS toggle instead of Native Fullscreen API
 
 // Toggle Fullscreen on Molecular Canvas (In-browser Pseudo-Fullscreen)
 function toggleCanvasFullscreen() {
@@ -378,22 +377,22 @@ function load3DStructure(pdbId) {
     document.getElementById("molSubtitle").textContent = "BioNMR IITG";
   }
 
-  // 1. Download directly via 3Dmol CDN (handles multimodel & secondary structure)
-  $3Dmol.download("pdb:" + currentPdbId, viewer, { multimodel: false }, () => {
-    applyModelAndRender();
-  }, (err) => {
-    // 2. Try local server API fallback
-    fetch(`/api/pdb/${encodeURIComponent(currentPdbId)}`)
-      .then(async (resp) => {
-        if (!resp.ok) throw new Error("HTTP " + resp.status);
-        const pdbText = await resp.text();
-        if (!pdbText || pdbText.trim().length < 50) throw new Error("Empty text");
-        viewer.clear();
-        viewer.addModel(pdbText, "pdb", { multimodel: false });
+  // 1. Try local server API first (instant, cached offline)
+  fetch(`/api/pdb/${encodeURIComponent(currentPdbId)}`)
+    .then(async (resp) => {
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const pdbText = await resp.text();
+      if (!pdbText || pdbText.trim().length < 50) throw new Error("Empty text");
+      viewer.clear();
+      viewer.addModel(pdbText, "pdb", { multimodel: false });
+      applyModelAndRender();
+    })
+    .catch((err) => {
+      console.warn("Local PDB not available, falling back to 3Dmol download:", err);
+      // 2. Fall back to online 3Dmol download
+      $3Dmol.download("pdb:" + currentPdbId, viewer, { multimodel: false }, () => {
         applyModelAndRender();
-      })
-      .catch(() => {
-        // 3. Try mmCIF format fallback
+      }, () => {
         $3Dmol.download("cif:" + currentPdbId, viewer, { multimodel: false }, () => {
           applyModelAndRender();
           document.getElementById("molSubtitle").textContent = "BioNMR IITG (mmCIF format)";
@@ -401,7 +400,7 @@ function load3DStructure(pdbId) {
           document.getElementById("molSubtitle").textContent = `⚠️ Could not download 3D coordinates for PDB: ${currentPdbId}`;
         });
       });
-  });
+    });
 }
 
 function switch3DStructure() {
