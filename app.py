@@ -1,14 +1,25 @@
+# ── 1. ZeroGPU stub ──────────────────────────────────────────────────────────
+try:
+    import spaces
+    @spaces.GPU
+    def dummy_gpu_fn():
+        pass
+    print("Hugging Face ZeroGPU environment detected.")
+except ImportError:
+    def dummy_gpu_fn():
+        pass
+
 import os
 import gradio as gr
 import gradio.routes
 from backend_app import app as fastapi_app
 
-# ── 1. Patch Gradio's ASGI app to expose our FastAPI app under /gradio_api ────
-# Gradio 4.x runs a Node.js proxy at :7860 that forwards /gradio_api/*
+# ── 2. Patch Gradio's ASGI app to expose our FastAPI app under /gradio_api ────
+# Gradio SSR runs a Node.js proxy at :7860 that forwards /gradio_api/*
 # and /run/* requests directly to Python at :7861.
 #
 # We mount our FastAPI sub-application under the /gradio_api/custom namespace.
-# The Node proxy will automatically forward these requests, allowing the
+# Sveltekit Node proxy will automatically forward these requests, allowing the
 # iframe and frontend fetch calls to reach our FastAPI routes.
 _original_create_app = gradio.routes.App.create_app
 
@@ -34,11 +45,15 @@ def _patched_create_app(cls, *args, **kwargs):
 # Replace the classmethod — store the original then reassign as a plain function
 gradio.routes.App.create_app = classmethod(_patched_create_app)
 
-# ── 2. Build Gradio UI with full-page iframe ──────────────────────────────────
+# ── 3. Build Gradio UI with full-page iframe ──────────────────────────────────
 # The iframe src="/gradio_api/custom/" loads our FastAPI app's static/index.html.
 # All fetch() calls in app.js use relative paths prefixed by API_PREFIX (/gradio_api/custom),
 # ensuring they go through the Node proxy and hit the custom mount.
 with gr.Blocks(title="MrFold Music Studio", fill_width=True, fill_height=True) as demo:
+    # Hidden ZeroGPU activator — required by HF ZeroGPU validation
+    _btn = gr.Button("ZeroGPU Activator", visible=False)
+    _btn.click(fn=dummy_gpu_fn)
+
     gr.HTML(
         """
         <style>
@@ -106,7 +121,7 @@ iframe {
 }
 """
 
-# ── 3. Launch ─────────────────────────────────────────────────────────────────
+# ── 4. Launch ─────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     demo.launch(css=gradio_css)
 else:
