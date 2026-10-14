@@ -37,3 +37,4 @@ scratch/
 *.md
 **/*.md
 !README.md
+!SOURCE_OF_TRUTH.md
