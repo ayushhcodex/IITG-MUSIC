@@ -38,3 +38,4 @@ scratch/
 **/*.md
 !README.md
 !SOURCE_OF_TRUTH.md
+!MASTER_DOCUMENTATION.md
